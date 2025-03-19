@@ -1,3 +1,8 @@
+## Documentation
+1. [InterOp message-passing](https://docs.optimism.io/stack/interop/message-passing)
+2. [Message-passing Tutorial](https://docs.optimism.io/stack/interop/tutorials/message-passing)
+
+
 ## Development environment
 
 - Unix-like operating system (Linux, macOS, or WSL for Windows)
