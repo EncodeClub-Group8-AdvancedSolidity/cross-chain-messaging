@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@eth-optimism/contracts-bedrock": "^0.17.3"
+  }
+}
