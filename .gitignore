@@ -6,6 +6,7 @@ out/
 !/broadcast
 /broadcast/*/31337/
 /broadcast/**/dry-run/
+/broadcast
 
 # Docs
 docs/
@@ -14,6 +15,10 @@ docs/
 .env
 
 deployment.json
+
+# mprocs
+# /mprocs.json
+/mprocs.log
 
 # Soldeer
 /dependencies
