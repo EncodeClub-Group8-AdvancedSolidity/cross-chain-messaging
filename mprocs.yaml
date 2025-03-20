@@ -1,0 +1,16 @@
+procs:
+  supersim:
+    cwd: .
+    shell: npx supersim --interop.autorelay --logs.directory supersim-logs
+  supersim-chain-901:
+    cwd: supersim-logs
+    shell: wait-port  http://:8420/ready && tail -f anvil-901.log
+  supersim-chain-902:
+    cwd: supersim-logs
+    shell: wait-port  http://:8420/ready && tail -f anvil-902.log
+  # frontend:
+  #   cwd: frontend
+  #   shell: npm dev
+  deploy-contracts:
+    cwd: .
+    shell: npm run deploy:dev

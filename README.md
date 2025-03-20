@@ -39,7 +39,7 @@ Add `supersim` to path: For Bash at `$HOME/.bashrc`. `$HOME/.zshrc` for Zsh.
 export PATH="$PATH:$HOME/supersim"
 ```
 
-## Setting up test networks
+## 🚀 Getting Started with Greeter
 
 ### Supersim Vanilla
 
@@ -92,10 +92,79 @@ echo 0x385 | cast --to-dec
 ```
 
 
-### Help
+## 🚀 Getting Started with SuperchainERC20
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+
+### 1. Initialize .env files:
+
+```sh
+npm run init:env
+```
+### 2. Install project dependencies:
+
+```sh
+npm i
+```
+### 3. Start the development environment:
+
+This command will:
+
+- Start the `supersim` local development environment
+- Deploy the smart contracts to the test networks
+<!-- - Launch the example frontend application -->
+
+```sh
+npm run dev
+```
+
+## 📦 Deploying SuperchainERC20s
+
+### Configuring RPC urls
+
+This repository includes a script to automatically fetch the public RPC URLs for each chain listed in the [Superchain Registry](https://github.com/ethereum-optimism/superchain-registry/blob/main/chainList.json) and add them to the `[rpc_endpoints]` configuration section of `foundry.toml`.
+
+The script ensures that only new RPC URLs are appended, preserving any URLs already present in `foundry.toml`. To execute this script, run:
+
+```sh
+npm run update:rpcs
+```
+
+### Deployment config
+
+The deployment configuration for token deployments is managed through the `deploy-config.toml` file. Below is a detailed breakdown of each configuration section:
+
+#### `[deploy-config]`
+
+This section defines parameters for deploying token contracts.
+
+- `salt`: A unique identifier used for deploying token contracts via [`Create2`]. This value along with the contract bytecode ensures that contract deployments are deterministic.
+  - example: `salt = "ethers phoenix"`
+- `chains`: Lists the chains where the token will be deployed. Each chain must correspond to an entry in the `[rpc_endpoints]` section of `foundry.toml`.
+  - example: `chains = ["op_chain_a","op_chain_b"]`
+
+#### `[token]`
+
+Deployment configuration for the token that will be deployed.
+
+- `owner_address`: the address designated as the owner of the token.
+  - The `L2NativeSuperchainERC20.sol` contract included in this repo extends the [`Ownable`](https://github.com/Vectorized/solady/blob/c3b2ffb4a3334ea519555c5ea11fb0e666f8c2bc/src/auth/Ownable.sol) contract
+  - example: `owner_address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"`
+- `name`: the token's name.
+  - example: `name = "TestSuperchainERC20"`
+- `symbol`: the token's symbol.
+  - example: `symbol = "TSU"`
+- `decimals`: the number of decimal places the token supports.
+  - example: `decimals = 18`
+
+### Deploying a token
+
+Before proceeding with this section, ensure that your `deploy-config.toml` file is fully configured (see the [Deployment config](#deployment-config) section for more details on setup). Additionally, confirm that the `[rpc_endpoints]` section in `foundry.toml` is properly set up by following the instructions in [Configuring RPC urls](#configuring-rpc-urls).
+
+Deployments are executed through the `SuperchainERC20Deployer.s.sol` script. This script deploys tokens across each specified chain in the deployment configuration using `Create2`, ensuring deterministic contract addresses for each deployment. The script targets the `L2NativeSuperchainERC20.sol` contract by default. If you need to modify the token being deployed, either update this file directly or point the script to a custom token contract of your choice.
+
+To execute a token deployment run:
+
+```sh
+npm run deploy:token
+
 ```
