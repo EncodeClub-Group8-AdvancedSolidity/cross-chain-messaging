@@ -111,7 +111,7 @@ This command will:
 
 - Start the `supersim` local development environment
 - Deploy the smart contracts to the test networks
-<!-- - Launch the example frontend application -->
+- Launch the example frontend application
 
 ```sh
 npm run dev

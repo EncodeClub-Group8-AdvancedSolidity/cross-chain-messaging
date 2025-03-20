@@ -8,9 +8,9 @@ procs:
   supersim-chain-902:
     cwd: supersim-logs
     shell: wait-port  http://:8420/ready && tail -f anvil-902.log
-  # frontend:
-  #   cwd: frontend
-  #   shell: npm dev
+  frontend:
+    cwd: frontend
+    shell: npm run init:env && npm run dev
   deploy-contracts:
     cwd: .
     shell: npm run deploy:dev
