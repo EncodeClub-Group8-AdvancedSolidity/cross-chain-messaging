@@ -25,7 +25,7 @@ contract L2NativeSuperchainERC20 is SuperchainERC20, Ownable {
         return _symbol;
     }
 
-    function decimals() public view override virtual returns (uint8) {
+    function decimals() public view virtual override returns (uint8) {
         return _decimals;
     }
 

@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 // Contracts
 import {ERC20} from "@solady/tokens/ERC20.sol";
 import {ERC4626} from "@solady/tokens/ERC4626.sol";
-import {SafeERC20} from "@openzeppelin-contracts-5.2.0/token/ERC20/utils/SafeERC20.sol";
 import "./L2NativeSuperchainERC20.sol";
 
 // Libraries
@@ -16,17 +15,18 @@ import {IERC20} from "@openzeppelin-contracts-5.2.0/interfaces/IERC20.sol";
 
 // Utils
 import {FixedPointMathLib} from "@solady/utils/FixedPointMathLib.sol";
-
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 
 abstract contract TokenVault is ERC4626, L2NativeSuperchainERC20 {
     using FixedPointMathLib for uint256;
 
-    constructor(address owner_, string memory name_,
-        string memory symbol_,
-        uint8 decimals_) ERC4626() L2NativeSuperchainERC20(owner_, name_, symbol_, decimals_) {}
+    constructor(address owner_, string memory name_, string memory symbol_, uint8 decimals_)
+        ERC4626()
+        L2NativeSuperchainERC20(owner_, name_, symbol_, decimals_)
+    {}
 
     function shareProfits(uint256 amount) public {
-        SafeERC20.safeTransferFrom(IERC20(asset()), msg.sender, address(this), amount);
+        SafeTransferLib.safeTransferFrom(address(IERC20(asset())), msg.sender, address(this), amount);
     }
 
     // Override conflicting functions
@@ -62,7 +62,7 @@ abstract contract TokenVault is ERC4626, L2NativeSuperchainERC20 {
         return super.balanceOf(account);
     }
 
-    function decimals() public view override(ERC4626, L2NativeSuperchainERC20) virtual returns (uint8) {
+    function decimals() public view virtual override(ERC4626, L2NativeSuperchainERC20) returns (uint8) {
         return super.decimals();
     }
 
