@@ -5,7 +5,8 @@ pragma solidity ^0.8.25;
 import {Test, console2} from "forge-std/Test.sol";
 
 // Contracts
-import {ERC20} from "@openzeppelin-contracts-5.2.0/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin-contracts/token/ERC20/IERC20.sol";
+import {ERC20} from "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 
 // Libraries
 // import {PredeployAddresses} from "@interop-lib/libraries/PredeployAddresses.sol";
@@ -33,7 +34,13 @@ contract TokenVaultTest is Test {
         depositToken.mint(alice, 10 ether);
         depositToken.mint(bob, 10 ether);
         depositToken.mint(owner, 12 ether);
-        tokenVault = new L2ERC4626TokenVault(address(depositToken), address(this), "Test", "TEST", 18);
+        tokenVault = new L2ERC4626TokenVault(
+            address(depositToken),
+            address(this),
+            "Test",
+            "TEST",
+            18
+        );
         vm.stopPrank();
     }
 
@@ -101,7 +108,10 @@ contract TokenVaultTest is Test {
 }
 
 contract MockERC20 is ERC20 {
-    constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {}
+    constructor(
+        string memory name_,
+        string memory symbol_
+    ) ERC20(name_, symbol_) {}
 
     function mint(address to, uint256 amount) external {
         _mint(to, amount);

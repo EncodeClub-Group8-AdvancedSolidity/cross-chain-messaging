@@ -8,8 +8,8 @@ import "./TokenVault.sol";
 import {PredeployAddresses} from "@interop-lib/libraries/PredeployAddresses.sol";
 
 // Interfaces
-import {IERC20} from "@openzeppelin-contracts-5.2.0/interfaces/IERC20.sol";
-// import {IERC20Metadata} from "@openzeppelin-contracts-5.2.0/interfaces/IERC20Metadata.sol";
+import {IERC20} from "@openzeppelin-contracts/token/ERC20/IERC20.sol";
+// import {IERC20Metadata} from "@openzeppelin-contracts/interfaces/IERC20Metadata.sol";
 
 // Utils
 import {FixedPointMathLib} from "@solady/utils/FixedPointMathLib.sol";
@@ -21,9 +21,13 @@ contract L2ERC4626TokenVault is Ownable, TokenVault {
     uint8 private immutable _decimals;
     address immutable _asset;
 
-    constructor(address asset_, address owner_, string memory name_, string memory symbol_, uint8 decimals_)
-        TokenVault(owner_, name_, symbol_, decimals_)
-    {
+    constructor(
+        address asset_,
+        address owner_,
+        string memory name_,
+        string memory symbol_,
+        uint8 decimals_
+    ) TokenVault(owner_, name_, symbol_, decimals_) {
         _name = name_;
         _symbol = symbol_;
         _decimals = decimals_;
@@ -40,5 +44,4 @@ contract L2ERC4626TokenVault is Ownable, TokenVault {
     function decimals() public view override returns (uint8) {
         return _decimals;
     }
-
 }

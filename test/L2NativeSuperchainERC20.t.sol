@@ -6,7 +6,8 @@ import {Test} from "forge-std/Test.sol";
 
 // Libraries
 import {PredeployAddresses} from "@interop-lib/libraries/PredeployAddresses.sol";
-import {IERC20} from "@openzeppelin-contracts-5.2.0/interfaces/IERC20.sol";
+import {IERC20} from "@openzeppelin-contracts/token/ERC20/IERC20.sol";
+
 import {Ownable} from "@solady/auth/Ownable.sol";
 import {ERC20} from "@solady/tokens/ERC20.sol";
 
@@ -17,8 +18,10 @@ import {L2NativeSuperchainERC20} from "src/L2NativeSuperchainERC20.sol";
 /// @notice Contract for testing the L2NativeSuperchainERC20Test contract.
 contract L2NativeSuperchainERC20Test is Test {
     address internal constant ZERO_ADDRESS = address(0);
-    address internal constant SUPERCHAIN_TOKEN_BRIDGE = PredeployAddresses.SUPERCHAIN_TOKEN_BRIDGE;
-    address internal constant MESSENGER = PredeployAddresses.L2_TO_L2_CROSS_DOMAIN_MESSENGER;
+    address internal constant SUPERCHAIN_TOKEN_BRIDGE =
+        PredeployAddresses.SUPERCHAIN_TOKEN_BRIDGE;
+    address internal constant MESSENGER =
+        PredeployAddresses.L2_TO_L2_CROSS_DOMAIN_MESSENGER;
     address owner;
     address alice;
     address bob;
@@ -30,11 +33,20 @@ contract L2NativeSuperchainERC20Test is Test {
         owner = makeAddr("owner");
         alice = makeAddr("alice");
         bob = makeAddr("bob");
-        superchainERC20 = new L2NativeSuperchainERC20(owner, "Test", "TEST", 18);
+        superchainERC20 = new L2NativeSuperchainERC20(
+            owner,
+            "Test",
+            "TEST",
+            18
+        );
     }
 
     /// @notice Helper function to setup a mock and expect a call to it.
-    function _mockAndExpect(address _receiver, bytes memory _calldata, bytes memory _returned) internal {
+    function _mockAndExpect(
+        address _receiver,
+        bytes memory _calldata,
+        bytes memory _returned
+    ) internal {
         vm.mockCall(_receiver, _calldata, _returned);
         vm.expectCall(_receiver, _calldata);
     }
@@ -59,7 +71,11 @@ contract L2NativeSuperchainERC20Test is Test {
     }
 
     /// @notice Tests the mintTo function reverts when the caller is not the owner.
-    function testFuzz_mintTo_succeeds(address _minter, address _to, uint256 _amount) public {
+    function testFuzz_mintTo_succeeds(
+        address _minter,
+        address _to,
+        uint256 _amount
+    ) public {
         vm.assume(_minter != owner);
 
         // Expect the revert with `Unauthorized` selector
@@ -94,7 +110,10 @@ contract L2NativeSuperchainERC20Test is Test {
     }
 
     /// @notice Tests that tokens can be transferred using the transfer function.
-    function testFuzz_transfer_succeeds(address _sender, uint256 _amount) public {
+    function testFuzz_transfer_succeeds(
+        address _sender,
+        uint256 _amount
+    ) public {
         vm.assume(_sender != ZERO_ADDRESS);
         vm.assume(_sender != bob);
 
@@ -113,7 +132,10 @@ contract L2NativeSuperchainERC20Test is Test {
     }
 
     /// @notice Tests that tokens can be transferred using the transferFrom function.
-    function testFuzz_transferFrom_succeeds(address _spender, uint256 _amount) public {
+    function testFuzz_transferFrom_succeeds(
+        address _spender,
+        uint256 _amount
+    ) public {
         vm.assume(_spender != ZERO_ADDRESS);
         vm.assume(_spender != bob);
         vm.assume(_spender != alice);
@@ -134,9 +156,11 @@ contract L2NativeSuperchainERC20Test is Test {
     }
 
     /// @notice tests that an insufficient balance cannot be transferred.
-    function testFuzz_transferInsufficientBalance_reverts(address _to, uint256 _mintAmount, uint256 _sendAmount)
-        public
-    {
+    function testFuzz_transferInsufficientBalance_reverts(
+        address _to,
+        uint256 _mintAmount,
+        uint256 _sendAmount
+    ) public {
         vm.assume(_mintAmount < type(uint256).max);
         _sendAmount = bound(_sendAmount, _mintAmount + 1, type(uint256).max);
 

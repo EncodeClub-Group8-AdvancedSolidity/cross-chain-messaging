@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {ERC20} from "@openzeppelin-contracts-5.2.0/token/ERC20/ERC20.sol";
-import {IERC20} from "@openzeppelin-contracts-5.2.0/token/ERC20/IERC20.sol";
-import {ERC20Burnable} from "@openzeppelin-contracts-5.2.0/token/ERC20/extensions/ERC20Burnable.sol";
-import {ERC20Votes, ERC20Permit} from "@openzeppelin-contracts-5.2.0/token/ERC20/extensions/ERC20Votes.sol";
-import {Ownable} from "@openzeppelin-contracts-5.2.0/access/Ownable.sol";
+import {ERC20} from "@openzeppelin-contracts/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin-contracts/token/ERC20/IERC20.sol";
+import {ERC20Burnable} from "@openzeppelin-contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import {ERC20Votes, ERC20Permit} from "@openzeppelin-contracts/token/ERC20/extensions/ERC20Votes.sol";
+import {Ownable} from "@openzeppelin-contracts/access/Ownable.sol";
 import {IERC7802, IERC165} from "@contracts-bedrock/L2/interfaces/IERC7802.sol";
 import {Predeploys} from "@contracts-bedrock/libraries/Predeploys.sol";
 import {Unauthorized} from "@contracts-bedrock/libraries/errors/CommonErrors.sol";
@@ -25,21 +25,31 @@ contract GovernanceToken is IERC7802, ERC20Burnable, ERC20Votes, Ownable {
     /// @param from   The account sending tokens.
     /// @param to     The account receiving tokens.
     /// @param amount The amount of tokens being transfered.
-    function _afterTokenTransfer(address from, address to, uint256 amount) internal override(ERC20, ERC20Votes) {
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override(ERC20, ERC20Votes) {
         super._afterTokenTransfer(from, to, amount);
     }
 
     /// @notice Internal mint function.
     /// @param to     The account receiving minted tokens.
     /// @param amount The amount of tokens to mint.
-    function _mint(address to, uint256 amount) internal override(ERC20, ERC20Votes) {
+    function _mint(
+        address to,
+        uint256 amount
+    ) internal override(ERC20, ERC20Votes) {
         super._mint(to, amount);
     }
 
     /// @notice Internal burn function.
     /// @param account The account that tokens will be burned from.
     /// @param amount  The amount of tokens that will be burned.
-    function _burn(address account, uint256 amount) internal override(ERC20, ERC20Votes) {
+    function _burn(
+        address account,
+        uint256 amount
+    ) internal override(ERC20, ERC20Votes) {
         super._burn(account, amount);
     }
 
@@ -48,7 +58,8 @@ contract GovernanceToken is IERC7802, ERC20Burnable, ERC20Votes, Ownable {
     /// @param _amount Amount of tokens to mint.
     function crosschainMint(address _to, uint256 _amount) external {
         // Only the `SuperchainTokenBridge` has permissions to mint tokens during crosschain transfers.
-        if (msg.sender != Predeploys.SUPERCHAIN_TOKEN_BRIDGE) revert Unauthorized();
+        if (msg.sender != Predeploys.SUPERCHAIN_TOKEN_BRIDGE)
+            revert Unauthorized();
 
         // Mint tokens to the `_to` account's balance.
         _mint(_to, _amount);
@@ -62,7 +73,8 @@ contract GovernanceToken is IERC7802, ERC20Burnable, ERC20Votes, Ownable {
     /// @param _amount Amount of tokens to burn.
     function crosschainBurn(address _from, uint256 _amount) external {
         // Only the `SuperchainTokenBridge` has permissions to burn tokens during crosschain transfers.
-        if (msg.sender != Predeploys.SUPERCHAIN_TOKEN_BRIDGE) revert Unauthorized();
+        if (msg.sender != Predeploys.SUPERCHAIN_TOKEN_BRIDGE)
+            revert Unauthorized();
 
         // Burn the tokens from the `_from` account's balance.
         _burn(_from, _amount);
@@ -72,8 +84,12 @@ contract GovernanceToken is IERC7802, ERC20Burnable, ERC20Votes, Ownable {
     }
 
     /// @inheritdoc IERC165
-    function supportsInterface(bytes4 _interfaceId) public view virtual returns (bool) {
-        return _interfaceId == type(IERC7802).interfaceId || _interfaceId == type(IERC20).interfaceId
-            || _interfaceId == type(IERC165).interfaceId;
+    function supportsInterface(
+        bytes4 _interfaceId
+    ) public view virtual returns (bool) {
+        return
+            _interfaceId == type(IERC7802).interfaceId ||
+            _interfaceId == type(IERC20).interfaceId ||
+            _interfaceId == type(IERC165).interfaceId;
     }
 }

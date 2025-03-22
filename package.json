@@ -1,31 +1,32 @@
 {
-    "name": "@group8/crosschain-messaging",
-    "main": "index.js",
-    "workspaces":[
-        "frontend",
-        "."
-    ],
-    "scripts": {
-      "deploy:dev": "env-cmd -f .env cross-env-shell 'wait-port http://:8420/ready && forge script SuperchainERC20Deployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
-      "deploy:token": "env-cmd -f .env cross-env-shell 'forge script SuperchainERC20Deployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
-      "update:rpcs": "./scripts/fetch-superchain-rpc-urls.sh",
-      "install": "forge install",
-      "build": "forge build",
-      "test": "forge test",
-      "dev": "mprocs",
-      "init:env": "cp .env.example .env"
-    },
-    "dependencies": {
-      "viem": "^2.21.37"
-    },
-    "devDependencies": {
-      "cross-env": "^7.0.3",
-      "doctoc": "^2.2.1",
-      "env-cmd": "^10.1.0",
-      "mprocs": "^0.7.1",
-      "nx": "^20.0.7",
-      "prettier": "^3.3.3",
-      "supersim": "^0.0.5",
-      "wait-port": "^1.1.0"
-    }
+  "name": "@group8/crosschain-messaging",
+  "main": "index.js",
+  "workspaces": [
+    "frontend",
+    "."
+  ],
+  "scripts": {
+    "deploy:dev": "env-cmd -f .env cross-env-shell 'wait-port http://:8420/ready && forge script SuperchainERC20Deployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
+    "deploy:token": "env-cmd -f .env cross-env-shell 'forge script SuperchainERC20Deployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
+    "deploy:vault": "env-cmd -f .env cross-env-shell 'forge script L2ERC4626TokenVaultDeployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
+    "update:rpcs": "./scripts/fetch-superchain-rpc-urls.sh",
+    "install": "forge install",
+    "build": "forge build",
+    "test": "forge test",
+    "dev": "mprocs",
+    "init:env": "cp .env.example .env"
+  },
+  "dependencies": {
+    "viem": "^2.21.37"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "doctoc": "^2.2.1",
+    "env-cmd": "^10.1.0",
+    "mprocs": "^0.7.1",
+    "nx": "^20.0.7",
+    "prettier": "^3.3.3",
+    "supersim": "^0.0.5",
+    "wait-port": "^1.1.0"
   }
+}
