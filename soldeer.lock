@@ -14,7 +14,7 @@ integrity = "e9ecdc364d152157431e5df5aa041ffddbe9bb1c1ad81634b1e72df9e23814e8"
 
 [[dependencies]]
 name = "solady"
-version = "0.1.1"
-url = "https://soldeer-revisions.s3.amazonaws.com/solady/0_1_1_27-01-2025_17:46:37_solady.zip"
-checksum = "c0135c293fd2adda7eb330f182fc8c2d5f210be8232086a1bcb7620ef98b36df"
-integrity = "f494b2f1e9356e9664a55c8d6862c58e08aa9fdf4eb6fdef10c0e104bd3d7cfe"
+version = "0.1.12"
+url = "https://soldeer-revisions.s3.amazonaws.com/solady/0_1_12_11-03-2025_11:14:32_solady.zip"
+checksum = "87d3f8c0443f6a34267c9dd8acf4f0a788379aa34b6f78d0c4c086ef0dd6a679"
+integrity = "81dfe91a4a5693db197d3f77f399215f433e5ad8cad25e5e7c77d103965f44c7"
