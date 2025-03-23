@@ -102,6 +102,8 @@ npm run init:env
 ```
 ### 2. Install project dependencies:
 
+> Note: This project uses `soldeer`, therefore use `forge soldeer install` to resolve dependency issues.
+
 ```sh
 npm i
 ```

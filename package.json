@@ -10,7 +10,7 @@
     "deploy:token": "env-cmd -f .env cross-env-shell 'forge script SuperchainERC20Deployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
     "deploy:vault": "env-cmd -f .env cross-env-shell 'forge script L2ERC4626TokenVaultDeployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
     "update:rpcs": "./scripts/fetch-superchain-rpc-urls.sh",
-    "install": "forge install",
+    "install": "forge soldeer install",
     "build": "forge build",
     "test": "forge test",
     "dev": "mprocs",

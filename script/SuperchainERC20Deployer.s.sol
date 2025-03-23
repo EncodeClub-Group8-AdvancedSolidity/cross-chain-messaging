@@ -113,6 +113,7 @@ contract SuperchainERC20Deployer is Script {
             ownerAddr
         );
 
+        vm.writeJson(jsonOutput, "deployment.json");
         vm.writeJson(jsonOutput, "deployment-erc20.json");
     }
 

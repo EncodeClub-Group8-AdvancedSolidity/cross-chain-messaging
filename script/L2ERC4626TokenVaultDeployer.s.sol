@@ -68,7 +68,7 @@ contract L2ERC4626TokenVaultDeployer is Script {
             ".vault.symbol"
         );
         uint256 decimals = vm.parseTomlUint(deployConfig, ".vault.decimals");
-        // require(decimals <= type(uint8).max, "decimals exceeds uint8 range");
+        require(decimals <= type(uint8).max, "decimals exceeds uint8 range");
         (address assetAddress, ) = new SuperchainERC20Deployer()
             ._precomputeInitAddress();
 

@@ -11,7 +11,9 @@ libs = ["lib", "dependencies"]
 fs_permissions = [
   { access='read', path='./configs' },
   { access='read', path='./test' },
-  { access='write', path='./deployment.json' }
+  { access='read-write', path='./deployment.json' },
+  { access='read-write', path='./deployment-erc20.json' },
+  { access='read-write', path='./deployment-erc4626.json' },
 ]
 
 [dependencies]
