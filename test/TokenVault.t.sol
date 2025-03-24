@@ -17,13 +17,10 @@ import {L2ERC4626TokenVault} from "../src/L2ERC4626TokenVault.sol";
 import {SuperchainERC20} from "../src/SuperchainERC20.sol";
 import {L2NativeSuperchainERC20} from "../src/L2NativeSuperchainERC20.sol";
 
-
 contract TokenVaultTest is Test {
     address internal constant ZERO_ADDRESS = address(0);
-    address internal constant SUPERCHAIN_TOKEN_BRIDGE =
-        PredeployAddresses.SUPERCHAIN_TOKEN_BRIDGE;
-    address internal constant MESSENGER =
-        PredeployAddresses.L2_TO_L2_CROSS_DOMAIN_MESSENGER;
+    address internal constant SUPERCHAIN_TOKEN_BRIDGE = PredeployAddresses.SUPERCHAIN_TOKEN_BRIDGE;
+    address internal constant MESSENGER = PredeployAddresses.L2_TO_L2_CROSS_DOMAIN_MESSENGER;
 
     MockSuperchainERC20 public superchainERC20;
 
@@ -40,12 +37,7 @@ contract TokenVaultTest is Test {
         bob = makeAddr("bob");
         charlie = makeAddr("charlie");
 
-        superchainERC20 = new MockSuperchainERC20(
-            owner,
-            "Deposit Token",
-            "DT",
-            18
-        );
+        superchainERC20 = new MockSuperchainERC20(owner, "Deposit Token", "DT", 18);
 
         vm.prank(owner);
         // depositToken = new MockERC20("Deposit Token", "DT");
@@ -53,13 +45,7 @@ contract TokenVaultTest is Test {
         superchainERC20.mint(alice, 10 ether);
         superchainERC20.mint(bob, 10 ether);
         superchainERC20.mint(owner, 12 ether);
-        tokenVault = new L2ERC4626TokenVault(
-            address(superchainERC20),
-            address(this),
-            "Test",
-            "TEST",
-            18
-        );
+        tokenVault = new L2ERC4626TokenVault(address(superchainERC20), address(this), "Test", "TEST", 18);
         vm.stopPrank();
     }
 
@@ -139,10 +125,7 @@ contract TokenVaultTest is Test {
 }
 
 contract MockERC20 is ERC20 {
-    constructor(
-        string memory name_,
-        string memory symbol_
-    ) ERC20(name_, symbol_) {}
+    constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {}
 
     function mint(address to, uint256 amount) external {
         _mint(to, amount);
@@ -150,12 +133,9 @@ contract MockERC20 is ERC20 {
 }
 
 contract MockSuperchainERC20 is L2NativeSuperchainERC20 {
-    constructor(
-        address owner_,
-        string memory name_,
-        string memory symbol_,
-        uint8 decimals_
-    ) L2NativeSuperchainERC20(owner_, name_, symbol_, decimals_) {}
+    constructor(address owner_, string memory name_, string memory symbol_, uint8 decimals_)
+        L2NativeSuperchainERC20(owner_, name_, symbol_, decimals_)
+    {}
 
     function mint(address to, uint256 amount) external {
         _mint(to, amount);

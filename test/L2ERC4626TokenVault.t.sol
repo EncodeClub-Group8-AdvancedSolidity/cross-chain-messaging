@@ -20,13 +20,10 @@ import {L2ERC4626TokenVault} from "../src/L2ERC4626TokenVault.sol";
 import {SuperchainERC20} from "../src/SuperchainERC20.sol";
 import {L2NativeSuperchainERC20} from "../src/L2NativeSuperchainERC20.sol";
 
-
 contract L2ERC4626TokenVaultTest is Test {
     address internal constant ZERO_ADDRESS = address(0);
-    address internal constant SUPERCHAIN_TOKEN_BRIDGE =
-        PredeployAddresses.SUPERCHAIN_TOKEN_BRIDGE;
-    address internal constant MESSENGER =
-        PredeployAddresses.L2_TO_L2_CROSS_DOMAIN_MESSENGER;
+    address internal constant SUPERCHAIN_TOKEN_BRIDGE = PredeployAddresses.SUPERCHAIN_TOKEN_BRIDGE;
+    address internal constant MESSENGER = PredeployAddresses.L2_TO_L2_CROSS_DOMAIN_MESSENGER;
 
     MockSuperchainERC20 public superchainERC20;
 
@@ -42,30 +39,15 @@ contract L2ERC4626TokenVaultTest is Test {
         bob = makeAddr("bob");
         charlie = makeAddr("charlie");
 
-        superchainERC20 = new MockSuperchainERC20(
-            owner,
-            "Deposit Token",
-            "DT",
-            18
-        );
+        superchainERC20 = new MockSuperchainERC20(owner, "Deposit Token", "DT", 18);
 
         vm.prank(owner);
-        tokenVault = new L2ERC4626TokenVault(
-            address(superchainERC20),
-            address(this),
-            "Test",
-            "TEST",
-            18
-        );
+        tokenVault = new L2ERC4626TokenVault(address(superchainERC20), address(this), "Test", "TEST", 18);
         vm.stopPrank();
     }
 
     /// @notice Helper function to setup a mock and expect a call to it.
-    function _mockAndExpect(
-        address _receiver,
-        bytes memory _calldata,
-        bytes memory _returned
-    ) internal {
+    function _mockAndExpect(address _receiver, bytes memory _calldata, bytes memory _returned) internal {
         vm.mockCall(_receiver, _calldata, _returned);
         vm.expectCall(_receiver, _calldata);
     }
@@ -91,7 +73,6 @@ contract L2ERC4626TokenVaultTest is Test {
 
         assertEq(superchainERC20.totalSupply(), _amount);
         assertEq(superchainERC20.balanceOf(_to), _amount);
-
     }
 
     /// @notice Tests tokenVault mint function
@@ -116,11 +97,7 @@ contract L2ERC4626TokenVaultTest is Test {
     // }
 
     /// @notice Tests the mintTo function reverts when the caller is not the owner.
-    function testFuzz_mintTo_succeeds(
-        address _minter,
-        address _to,
-        uint256 _amount
-    ) public {
+    function testFuzz_mintTo_succeeds(address _minter, address _to, uint256 _amount) public {
         vm.assume(_minter != owner);
 
         // Expect the revert with `Unauthorized` selector
@@ -155,10 +132,7 @@ contract L2ERC4626TokenVaultTest is Test {
     }
 
     /// @notice Tests that tokens can be transferred using the transfer function.
-    function testFuzz_transfer_succeeds(
-        address _sender,
-        uint256 _amount
-    ) public {
+    function testFuzz_transfer_succeeds(address _sender, uint256 _amount) public {
         vm.assume(_sender != ZERO_ADDRESS);
         vm.assume(_sender != bob);
 
@@ -177,10 +151,7 @@ contract L2ERC4626TokenVaultTest is Test {
     }
 
     /// @notice Tests that tokens can be transferred using the transferFrom function.
-    function testFuzz_transferFrom_succeeds(
-        address _spender,
-        uint256 _amount
-    ) public {
+    function testFuzz_transferFrom_succeeds(address _spender, uint256 _amount) public {
         vm.assume(_spender != ZERO_ADDRESS);
         vm.assume(_spender != bob);
         vm.assume(_spender != alice);
@@ -201,11 +172,9 @@ contract L2ERC4626TokenVaultTest is Test {
     }
 
     /// @notice tests that an insufficient balance cannot be transferred.
-    function testFuzz_transferInsufficientBalance_reverts(
-        address _to,
-        uint256 _mintAmount,
-        uint256 _sendAmount
-    ) public {
+    function testFuzz_transferInsufficientBalance_reverts(address _to, uint256 _mintAmount, uint256 _sendAmount)
+        public
+    {
         vm.assume(_mintAmount < type(uint256).max);
         _sendAmount = bound(_sendAmount, _mintAmount + 1, type(uint256).max);
 
@@ -302,12 +271,9 @@ contract L2ERC4626TokenVaultTest is Test {
 }
 
 contract MockSuperchainERC20 is L2NativeSuperchainERC20 {
-    constructor(
-        address owner_,
-        string memory name_,
-        string memory symbol_,
-        uint8 decimals_
-    ) L2NativeSuperchainERC20(owner_, name_, symbol_, decimals_) {}
+    constructor(address owner_, string memory name_, string memory symbol_, uint8 decimals_)
+        L2NativeSuperchainERC20(owner_, name_, symbol_, decimals_)
+    {}
 
     function mint(address to, uint256 amount) external {
         _mint(to, amount);

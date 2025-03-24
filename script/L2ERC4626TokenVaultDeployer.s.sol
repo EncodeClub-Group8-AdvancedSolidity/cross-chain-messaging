@@ -10,14 +10,8 @@ contract L2ERC4626TokenVaultDeployer is Script {
     string deployConfig;
 
     constructor() {
-        string memory deployConfigPath = vm.envOr(
-            "DEPLOY_CONFIG_PATH",
-            string("/configs/deploy-config.toml")
-        );
-        string memory filePath = string.concat(
-            vm.projectRoot(),
-            deployConfigPath
-        );
+        string memory deployConfigPath = vm.envOr("DEPLOY_CONFIG_PATH", string("/configs/deploy-config.toml"));
+        string memory filePath = string.concat(vm.projectRoot(), deployConfigPath);
         deployConfig = vm.readFile(filePath);
     }
 
@@ -31,10 +25,7 @@ contract L2ERC4626TokenVaultDeployer is Script {
     function setUp() public {}
 
     function run() public {
-        string[] memory chainsToDeployTo = vm.parseTomlStringArray(
-            deployConfig,
-            ".deploy_config.chains"
-        );
+        string[] memory chainsToDeployTo = vm.parseTomlStringArray(deployConfig, ".deploy_config.chains");
 
         address deployedAddress;
         address ownerAddr;
@@ -45,10 +36,7 @@ contract L2ERC4626TokenVaultDeployer is Script {
             console.log("Deploying to chain: ", chainToDeployTo);
 
             vm.createSelectFork(chainToDeployTo);
-            (
-                address _deployedAddress,
-                address _ownerAddr
-            ) = deployL2ERC4626TokenVault();
+            (address _deployedAddress, address _ownerAddr) = deployL2ERC4626TokenVault();
             deployedAddress = _deployedAddress;
             ownerAddr = _ownerAddr;
         }
@@ -56,80 +44,44 @@ contract L2ERC4626TokenVaultDeployer is Script {
         outputDeploymentResult(deployedAddress, ownerAddr);
     }
 
-    function deployL2ERC4626TokenVault()
-        public
-        broadcast
-        returns (address addr_, address ownerAddr_)
-    {
+    function deployL2ERC4626TokenVault() public broadcast returns (address addr_, address ownerAddr_) {
         ownerAddr_ = vm.parseTomlAddress(deployConfig, ".vault.owner_address");
         string memory name = vm.parseTomlString(deployConfig, ".vault.name");
-        string memory symbol = vm.parseTomlString(
-            deployConfig,
-            ".vault.symbol"
-        );
+        string memory symbol = vm.parseTomlString(deployConfig, ".vault.symbol");
         uint256 decimals = vm.parseTomlUint(deployConfig, ".vault.decimals");
         require(decimals <= type(uint8).max, "decimals exceeds uint8 range");
-        (address assetAddress, ) = new SuperchainERC20Deployer()
-            ._precomputeInitAddress();
+        (address assetAddress,) = new SuperchainERC20Deployer()._precomputeInitAddress();
 
         bytes memory initCode = abi.encodePacked(
-            type(L2ERC4626TokenVault).creationCode,
-            abi.encode(assetAddress, ownerAddr_, name, symbol, uint8(decimals))
+            type(L2ERC4626TokenVault).creationCode, abi.encode(assetAddress, ownerAddr_, name, symbol, uint8(decimals))
         );
-        address preComputedAddress = vm.computeCreate2Address(
-            _implSalt(),
-            keccak256(initCode)
-        );
+        address preComputedAddress = vm.computeCreate2Address(_implSalt(), keccak256(initCode));
         if (preComputedAddress.code.length > 0) {
             console.log(
-                "L2ERC4626TokenVault already deployed at %s",
-                preComputedAddress,
-                "on chain id: ",
-                block.chainid
+                "L2ERC4626TokenVault already deployed at %s", preComputedAddress, "on chain id: ", block.chainid
             );
             addr_ = preComputedAddress;
         } else {
             addr_ = address(
-                new L2ERC4626TokenVault{salt: _implSalt()}(
-                    assetAddress,
-                    ownerAddr_,
-                    name,
-                    symbol,
-                    uint8(decimals)
-                )
+                new L2ERC4626TokenVault{salt: _implSalt()}(assetAddress, ownerAddr_, name, symbol, uint8(decimals))
             );
-            console.log(
-                "Deployed L2ERC4626TokenVault at address: ",
-                addr_,
-                "on chain id: ",
-                block.chainid
-            );
+            console.log("Deployed L2ERC4626TokenVault at address: ", addr_, "on chain id: ", block.chainid);
         }
     }
 
-    function outputDeploymentResult(
-        address deployedAddress,
-        address ownerAddr
-    ) public {
+    function outputDeploymentResult(address deployedAddress, address ownerAddr) public {
         console.log("Outputting deployment result");
 
         string memory obj = "result";
         vm.serializeAddress(obj, "deployedAddress", deployedAddress);
-        string memory jsonOutput = vm.serializeAddress(
-            obj,
-            "ownerAddress",
-            ownerAddr
-        );
+        string memory jsonOutput = vm.serializeAddress(obj, "ownerAddress", ownerAddr);
 
         vm.writeJson(jsonOutput, "deployment-erc4626.json");
     }
 
     /// @notice The CREATE2 salt to be used when deploying the vault.
     function _implSalt() internal view returns (bytes32) {
-        string[] memory salt = vm.parseTomlStringArray(
-            deployConfig,
-            ".deploy_config.salt"
-        );
+        string[] memory salt = vm.parseTomlStringArray(deployConfig, ".deploy_config.salt");
         return keccak256(abi.encodePacked(salt[1]));
     }
 }

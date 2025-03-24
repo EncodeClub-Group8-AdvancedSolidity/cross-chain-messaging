@@ -21,13 +21,9 @@ contract L2ERC4626TokenVault is Ownable, TokenVault {
     uint8 private immutable _decimals;
     address immutable _asset;
 
-    constructor(
-        address asset_,
-        address owner_,
-        string memory name_,
-        string memory symbol_,
-        uint8 decimals_
-    ) TokenVault(owner_, name_, symbol_, decimals_) {
+    constructor(address asset_, address owner_, string memory name_, string memory symbol_, uint8 decimals_)
+        TokenVault(owner_, name_, symbol_, decimals_)
+    {
         _name = name_;
         _symbol = symbol_;
         _decimals = decimals_;
