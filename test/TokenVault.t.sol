@@ -80,7 +80,7 @@ contract TokenVaultTest is Test {
         tokenVault.mint(1 ether, alice);
         assertEq(tokenVault.balanceOf(alice), 1 ether);
         assertEq(superchainERC20.balanceOf(address(tokenVault)), 1 ether);
-        // assertEq(superchainERC20.balanceOf(alice), 10 ether);
+        assertEq(superchainERC20.balanceOf(alice), 9 ether);
         vm.stopPrank();
     }
 
