@@ -4,6 +4,7 @@ pragma solidity ^0.8.25;
 import {Script, console} from "forge-std/Script.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {L2ERC4626TokenVault} from "../src/L2ERC4626TokenVault.sol";
+import {L2NativeSuperchainERC20} from "../src/L2NativeSuperchainERC20.sol";
 import {SuperchainERC20Deployer} from "./SuperchainERC20Deployer.s.sol";
 
 contract L2ERC4626TokenVaultDeployer is Script {
@@ -69,8 +70,7 @@ contract L2ERC4626TokenVaultDeployer is Script {
         );
         uint256 decimals = vm.parseTomlUint(deployConfig, ".vault.decimals");
         require(decimals <= type(uint8).max, "decimals exceeds uint8 range");
-        (address assetAddress, ) = new SuperchainERC20Deployer()
-            ._precomputeInitAddress();
+        (address assetAddress, ) = _precomputeTokenInitAddress();
 
         bytes memory initCode = abi.encodePacked(
             type(L2ERC4626TokenVault).creationCode,
@@ -131,5 +131,29 @@ contract L2ERC4626TokenVaultDeployer is Script {
             ".deploy_config.salt"
         );
         return keccak256(abi.encodePacked(salt[1]));
+    }
+
+    function _precomputeTokenInitAddress()
+        public
+        view
+        returns (address preComputedAddress_, address ownerAddr_)
+    {
+        ownerAddr_ = vm.parseTomlAddress(deployConfig, ".token.owner_address");
+        string memory name = vm.parseTomlString(deployConfig, ".token.name");
+        string memory symbol = vm.parseTomlString(
+            deployConfig,
+            ".token.symbol"
+        );
+        uint256 decimals = vm.parseTomlUint(deployConfig, ".token.decimals");
+        require(decimals <= type(uint8).max, "decimals exceeds uint8 range");
+        bytes memory initCode = abi.encodePacked(
+            type(L2NativeSuperchainERC20).creationCode,
+            abi.encode(ownerAddr_, name, symbol, uint8(decimals))
+        );
+
+        preComputedAddress_ = vm.computeCreate2Address(
+            _implSalt(),
+            keccak256(initCode)
+        );
     }
 }

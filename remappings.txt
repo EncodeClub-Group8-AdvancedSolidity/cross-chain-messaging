@@ -1,5 +1,5 @@
 @eth-optimism/=lib/node_modules/@eth-optimism/
 @openzeppelin-contracts/=dependencies/@openzeppelin-contracts-5.2.0/
 forge-std-1.9.6/=dependencies/forge-std-1.9.6/
-@solady/=dependencies/solady-0.1.1/src/
+@solady/=dependencies/solady-0.1.12/src/
 @interop-lib/=dependencies/interop-lib/src/
