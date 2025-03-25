@@ -1,7 +1,7 @@
 ## Documentation
+
 1. [InterOp message-passing](https://docs.optimism.io/stack/interop/message-passing)
 2. [Message-passing Tutorial](https://docs.optimism.io/stack/interop/tutorials/message-passing)
-
 
 ## Development environment
 
@@ -10,6 +10,7 @@
 - Git for version control
 
 ## Required tools
+
 The primary tools:
 
 - Foundry: For smart contract development
@@ -23,17 +24,20 @@ Verify your installation:
 forge --version
 supersim --version
 ```
+
 ### Installations
+
 1. [Foundry](https://book.getfoundry.sh/getting-started/installation)
 2. Supersim
-    - [Precompiled binaries](https://github.com/ethereum-optimism/supersim/releases)
-    - [Homebrew](https://brew.sh/) (OS X, Linux)
-    ```bash
-    brew tap ethereum-optimism/tap
-    brew install supersim
-    ```
+   - [Precompiled binaries](https://github.com/ethereum-optimism/supersim/releases)
+   - [Homebrew](https://brew.sh/) (OS X, Linux)
+   ```bash
+   brew tap ethereum-optimism/tap
+   brew install supersim
+   ```
 
-Add `supersim` to path: For Bash at `$HOME/.bashrc`. `$HOME/.zshrc` for Zsh. 
+Add `supersim` to path: For Bash at `$HOME/.bashrc`. `$HOME/.zshrc` for Zsh.
+
 ```
 # Add supersim PATH
 export PATH="$PATH:$HOME/supersim"
@@ -46,14 +50,17 @@ export PATH="$PATH:$HOME/supersim"
 ```shell
 $ supersim --interop.autorelay
 ```
+
 Supersim creates three anvil blockchains:
 
 1. L1 at http://127.0.0.1:8545
-2. OPChainA	at http://127.0.0.1:9545
-3. OPChainB	at http://127.0.0.1:9546
+2. OPChainA at http://127.0.0.1:9545
+3. OPChainB at http://127.0.0.1:9546
 
 ### Store the configuration in environment variables
+
 In a separate shell,
+
 ```shell
 USER_ADDR=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 PRIV_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
@@ -75,9 +82,11 @@ $ GREETER_A_ADDR=`forge create --rpc-url $RPC_A --private-key $PRIV_KEY --broadc
 ```
 
 ### Send a message
+
 Send a greeting from chain A to chain B.
+
 ```shell
-$ cast call --rpc-url $RPC_B $GREETER_B_ADDR "greet()" | cast --to-ascii 
+$ cast call --rpc-url $RPC_B $GREETER_B_ADDR "greet()" | cast --to-ascii
 cast send --private-key $PRIV_KEY --rpc-url $RPC_A $GREETER_A_ADDR "setGreeting(string)" "Hello from chain A, with a CrossDomainSetGreeting event"
 sleep 2
 cast call --rpc-url $RPC_B $GREETER_B_ADDR "greet()" | cast --to-ascii
@@ -91,15 +100,14 @@ echo $GREETER_A_ADDR
 echo 0x385 | cast --to-dec
 ```
 
-
 ## 🚀 Getting Started with SuperchainERC20
-
 
 ### 1. Initialize .env files:
 
 ```sh
 npm run init:env
 ```
+
 ### 2. Install project dependencies:
 
 > Note: This project uses `soldeer`, therefore use `forge soldeer install` to resolve dependency issues.
@@ -107,6 +115,7 @@ npm run init:env
 ```sh
 npm i
 ```
+
 ### 3. Start the development environment:
 
 This command will:
@@ -170,3 +179,51 @@ To execute a token deployment run:
 npm run deploy:token
 
 ```
+
+## How to Relay message
+
+### Using cast
+
+1. Get the log emitted by the `L2ToL2CrossDomainMessenger`, which has an address of `0x4200000000000000000000000000000000000023`
+   - `cast logs --address 0x4200000000000000000000000000000000000023 --rpc-url http://127.0.0.1:9545`
+   - Get `blockHash` for step-2
+   - Get `topic` and `data` for step-3
+   - Get `blockNumber`, `logIndex` for step-4
+2. Retrieve the block timestamp from the log of step-1
+   - `cast block 0xREPLACE_WITH_CORRECT_BLOCKHASH --rpc-url http://127.0.0.1:9545`
+   - The timestamp will be used in `step-4` for `relayMessage()`
+3. Prepare the message identifier & payload
+   - Take the `topic` and `data` from Step-1 of log emitted
+   - "0x....the....topic.....+....data"
+   - e.g: `0x382409ac69001e11931a28435afef442cbfd20d9891907e8fa373ba7d351f3200000000000000000000000000000000000000000000000000000000000000386000000000000000000000000420beef0000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000420beef00000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000064d9f50046000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb9226600000000000000000000000000000000000000000000000000000000000003e800000000000000000000000000000000000000000000000000000000`
+4. Send the relayMessage transaction
+   - REPLACE_WITH_THE_VALUES `relayMessage(L2ToL2CrossDomainMessenger, blocknumber, logIndex, timestamp, chainid)`
+   - `cast send 0x4200000000000000000000000000000000000023 --gas-limit 200000 "relayMessage((address, uint256, uint256, uint256, uint256), bytes)" "(0x4200000000000000000000000000000000000023, 4, 1, 1728507703, 901)" 0xTOPIC_AND_DATA_CONCATED --rpc-url http://127.0.0.1:9546 --private-key $PRIV_KEY`
+
+## Cross-Chain Ping Pong
+
+### Deploy the contract to ChainA and ChainB
+
+Have supersim running in autorelay mode
+
+```shell
+$ supersim --interop.autorelay
+```
+
+Deploy with a script to a determinstic address on both chains
+
+```sh
+npm run deploy:ping
+```
+
+1. Call Hit ball
+   - `cast send 0x9A4C1F19dA9EAD10EF26a08061B38BA7227156ae "hitBallTo(uint256)" 902 --rpc-url http://127.0.0.1:9545 --private-key $PRIV_KEY`
+
+If the relay fails, run a manual relay message call
+
+2. Relay message
+   - `cast logs --address 0x4200000000000000000000000000000000000023 --rpc-url http://127.0.0.1:9545`
+   - Retrieve block-timestamp: `cast block 0xREPLACE_WITH_CORRECT_BLOCKHASH --rpc-url http://127.0.0.1:9545` E.g `1742907859`
+   - Prepare payload `topic & data` concat
+   - Send the relayMessage transaction
+     - `cast send 0x4200000000000000000000000000000000000023 --gas-limit 200000 "relayMessage((address, uint256, uint256, uint256, uint256), bytes)" "(0x4200000000000000000000000000000000000023, REPLACE_WITH_blocknumber, REPLACE_WITH_logIndex, REPLACE_WITH_timestamp, 901)" 0xTOPIC_AND_DATA_CONCATED --rpc-url http://127.0.0.1:9546 --private-key $PRIV_KEY`
