@@ -11,13 +11,14 @@ import {PredeployAddresses} from "@interop-lib/libraries/PredeployAddresses.sol"
 
 // Interfaces
 import {IERC20} from "@openzeppelin-contracts/interfaces/IERC20.sol";
+import {IERC7802, IERC165} from "@interop-lib/interfaces/IERC7802.sol";
 // import {IERC20Metadata} from "@openzeppelin-contracts/interfaces/IERC20Metadata.sol";
 
 // Utils
 import {FixedPointMathLib} from "@solady/utils/FixedPointMathLib.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 
-abstract contract TokenVault is ERC4626, L2NativeSuperchainERC20 {
+abstract contract TokenVault is IERC7802, ERC4626, L2NativeSuperchainERC20 {
     using FixedPointMathLib for uint256;
 
     constructor(address owner_, string memory name_, string memory symbol_, uint8 decimals_)
@@ -84,5 +85,17 @@ abstract contract TokenVault is ERC4626, L2NativeSuperchainERC20 {
 
     function transferFrom(address from, address to, uint256 amount) public override(ERC20) returns (bool) {
         return super.transferFrom(from, to, amount);
+    }
+
+    /// @inheritdoc IERC165
+    function supportsInterface(bytes4 _interfaceId)
+        public
+        view
+        virtual
+        override(IERC165, SuperchainERC20)
+        returns (bool)
+    {
+        return _interfaceId == type(IERC7802).interfaceId || _interfaceId == type(IERC20).interfaceId
+            || _interfaceId == type(IERC165).interfaceId;
     }
 }

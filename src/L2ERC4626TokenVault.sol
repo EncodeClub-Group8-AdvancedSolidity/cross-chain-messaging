@@ -129,25 +129,16 @@ contract L2ERC4626TokenVault is Ownable, TokenVault {
     /// @param _to      Address to relay tokens to.
     /// @param _amount  Amount of tokens to relay.
     function relayAsset(address asset_, address _from, address _to, uint256 _amount) external onlyCrossDomainCallback {
-        (address crossDomainMessageSender, uint256 source) =
-            IL2ToL2CrossDomainMessenger(messenger).crossDomainMessageContext();
-
-        // if (crossDomainMessageSender != address(this)) revert InvalidCrossDomainSender();
-
-        L2NativeSuperchainERC20(asset_).crosschainMint(_to, _amount);
+        (address crossDomainMessageSender, uint256 source) = messenger.crossDomainMessageContext();
 
         emit RelayAsset(asset_, _from, _to, _amount, source);
 
         bytes memory message = abi.encodeCall(this.completeRebalance, (asset_));
-        IL2ToL2CrossDomainMessenger(messenger).sendMessage(source, address(this), message);
+        messenger.sendMessage(source, address(this), message);
     }
 
     /// @notice Initiates a rebalance for a specific asset
-    function initiateRebalance(address asset_, uint256 amount, uint256 targetChainId)
-        external
-        returns (bytes32 msgHash_)
-    {
-        // require(msg.sender == PredeployAddresses.SUPERCHAIN_TOKEN_BRIDGE, "Unauthorized");
+    function initiateRebalance(address asset_, uint256 amount, uint256 targetChainId) external {
         if (_rebalanceStates[asset_].isRebalancing) {
             revert RebalanceStarted();
         }
@@ -160,10 +151,23 @@ contract L2ERC4626TokenVault is Ownable, TokenVault {
 
         _rebalanceStates[asset_] = RebalanceState({amount: amount, targetChainId: targetChainId, isRebalancing: true});
 
-        L2NativeSuperchainERC20(asset_).crosschainBurn(address(this), amount);
-        bytes memory message = abi.encodeCall(this.relayAsset, (asset_, address(this), address(this), amount));
-        msgHash_ = IL2ToL2CrossDomainMessenger(messenger).sendMessage(targetChainId, address(this), message);
+        // L2NativeSuperchainERC20(asset_).crosschainBurn(address(this), amount);
+        // Call the SUPERCHAIN_TOKEN_BRIDGE contract's sendERC20 function
+        address superchainBridge = PredeployAddresses.SUPERCHAIN_TOKEN_BRIDGE;
+        bytes memory data = abi.encodeWithSignature(
+            "sendERC20(address,address,uint256,uint256)", // returns Hash of the message sent.
+            asset_, // Address of the token sent.
+            address(this), // Address of the sender.
+            amount, // Number of tokens sent.
+            targetChainId // Chain ID of the destination chain.
+        );
 
+        (bool success,) = superchainBridge.call(data);
+        require(success, "SUPERCHAIN_TOKEN_BRIDGE: sendERC20 failed");
+
+        bytes memory message = abi.encodeCall(this.relayAsset, (asset_, address(this), address(this), amount));
+        // Send to the destination
+        messenger.sendMessage(targetChainId, address(this), message);
         emit RebalanceInitiated(asset_, amount, targetChainId);
     }
 
@@ -189,33 +193,8 @@ contract L2ERC4626TokenVault is Ownable, TokenVault {
         delete _rebalanceStates[asset_];
     }
 
-    /// @notice Handles cross-chain rebalance requests
-    function handleCrossChainRebalance(address asset_, uint256 amount, uint256 targetChainId, address sender)
-        external
-    {
-        if (msg.sender != PredeployAddresses.L2_TO_L2_CROSS_DOMAIN_MESSENGER) {
-            revert SenderNotVault();
-        }
-
-        if (sender == address(this)) {
-            revert SenderIsSelf();
-        }
-
-        if (block.chainid != targetChainId) {
-            revert RebalanceChainMismatch();
-        }
-
-        if (_rebalanceStates[asset_].isRebalancing) {
-            revert RebalanceStarted();
-        }
-
-        _rebalanceStates[asset_] = RebalanceState({amount: amount, targetChainId: targetChainId, isRebalancing: true});
-
-        emit RebalanceInitiated(asset_, amount, targetChainId);
-    }
-
-    // @notice resolve this game by providing the game ending event
-    function resolve(Identifier calldata _id, bytes calldata _data) external {
+    /// @notice updateVaultUnderlyingAsset changes the underlying asset amount of the vault across the superchain
+    function updateVaultUnderlyingAsset(Identifier calldata _id, bytes calldata _data) external {
         // Validate Log
         require(_id.origin == address(this));
         ICrossL2Inbox(PredeployAddresses.CROSS_L2_INBOX).validateMessage(_id, keccak256(_data));

@@ -227,3 +227,85 @@ If the relay fails, run a manual relay message call
    - Prepare payload `topic & data` concat
    - Send the relayMessage transaction
      - `cast send 0x4200000000000000000000000000000000000023 --gas-limit 200000 "relayMessage((address, uint256, uint256, uint256, uint256), bytes)" "(0x4200000000000000000000000000000000000023, REPLACE_WITH_blocknumber, REPLACE_WITH_logIndex, REPLACE_WITH_timestamp, 901)" 0xTOPIC_AND_DATA_CONCATED --rpc-url http://127.0.0.1:9546 --private-key $PRIV_KEY`
+
+## Cross-chain rebalancing of ERC4626 Vault
+### High level steps
+
+Sending an interop message using the `L2ToL2CrossDomainMessenger`:
+
+#### On source chain (OPChainA 901)
+
+1. Invoke `L2ERC4626TokenVault.initiateRebalance` to bridge funds
+  - this leverages `L2ToL2CrossDomainMessenger.sendMessage` to make the cross chain call
+2. Retrieve the log identifier and the message payload for the `SentMessage` event.
+
+#### On destination chain (OPChainB 902)
+
+3. Relay the message with `L2ToL2CrossDomainMessenger.relayMessage`
+  - which then calls `L2ERC4626TokenVault.relayAsset`
+
+### Steps
+
+1. Start the supersim and launch the vault contracts
+```sh
+supersim --interop.autorelay
+npm run deploy:token
+npm run deploy:vault
+```
+
+Once the `deploy:token` and `deploy:vault` scripts succeed, proceed to the following step.
+```shell
+VAULT_CONTRACT_ADDRESS=0xREPLACE_WITH_THE_VAULT_ADDRESS_FROM_deployment_erc4626_json
+TOKEN_CONTRACT_ADDRESS=0x6d9657d9A35A467019627E7F0a89e67fbaBFD1aF
+USER_ADDR=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+PRIV_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+RPC_L1=http://localhost:8545
+RPC_A=http://localhost:9545
+RPC_B=http://localhost:9546
+```
+
+2. Mint tokens to deposit on chain 901
+
+```sh
+cast send $TOKEN_CONTRACT_ADDRESS "mintTo(address _to, uint256 _amount)"  $USER_ADDR 1000  --rpc-url $RPC_A --private-key $PRIV_KEY
+```
+
+3. Initiate the deposit transaction on chain 901
+
+- <VAULT_CONTRACT_ADDRESS>: The address of the deployed `L2ERC4626TokenVault` contract.
+- <ASSET_AMOUNT>: The amount of the underlying asset you want to deposit.
+- <RECEIVER_ADDRESS>: The address that will receive the shares.
+- `$PRIV_KEY`: The private key of the account making the transaction.
+
+Approve the vault to spend the underlying asset.
+```sh
+cast send $TOKEN_CONTRACT_ADDRESS "approve(address,uint256)" $VAULT_CONTRACT_ADDRESS 1000 --rpc-url $RPC_A --private-key $PRIV_KEY
+```
+
+```sh
+cast send $VAULT_CONTRACT_ADDRESS "deposit(uint256,address)" 100 $USER_ADDR --rpc-url $RPC_A --private-key $PRIV_KEY
+```
+
+4. Initiate a rebalance to chain 902
+
+```sh
+cast send $VAULT_CONTRACT_ADDRESS "initiateRebalance(address,uint256,uint256)" $TOKEN_CONTRACT_ADDRESS 50 902 --rpc-url $RPC_A --private-key $PRIV_KEY
+```
+
+5. Check the balanceOf `VAULT` and `UNDERLYING_ASSET` across the opChains
+
+After the rebalancing, the specified underlying asset amount will be distributed between the chains 
+
+```sh
+# Chain A underlying asset balance
+cast balance --erc20 $TOKEN_CONTRACT_ADDRESS $VAULT_CONTRACT_ADDRESS --rpc-url $RPC_A
+# Chain B underlying asset balance
+cast balance --erc20 $TOKEN_CONTRACT_ADDRESS $VAULT_CONTRACT_ADDRESS --rpc-url $RPC_B
+```
+```sh
+# Share Token balance of the user on Chain B
+cast balance --erc20 $VAULT_CONTRACT_ADDRESS $USER_ADDR --rpc-url $RPC_B
+# Share token balance of the user on Chain A
+cast balance --erc20 $VAULT_CONTRACT_ADDRESS $USER_ADDR --rpc-url $RPC_A
+
+```

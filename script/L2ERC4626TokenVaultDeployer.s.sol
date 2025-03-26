@@ -59,10 +59,12 @@ contract L2ERC4626TokenVaultDeployer is Script {
         require(decimals <= type(uint8).max, "decimals exceeds uint8 range");
         (address assetAddress,) = _precomputeTokenInitAddress();
 
+        console.log("Asset address: ", assetAddress);
+
         bytes memory initCode = abi.encodePacked(
             type(L2ERC4626TokenVault).creationCode, abi.encode(assetAddress, ownerAddr_, name, symbol, uint8(decimals))
         );
-        address preComputedAddress = vm.computeCreate2Address(_implSalt(), keccak256(initCode));
+        address preComputedAddress = vm.computeCreate2Address(_implSalt(1), keccak256(initCode));
         if (preComputedAddress.code.length > 0) {
             console.log(
                 "L2ERC4626TokenVault already deployed at %s", preComputedAddress, "on chain id: ", block.chainid
@@ -70,7 +72,7 @@ contract L2ERC4626TokenVaultDeployer is Script {
             addr_ = preComputedAddress;
         } else {
             addr_ = address(
-                new L2ERC4626TokenVault{salt: _implSalt()}(assetAddress, ownerAddr_, name, symbol, uint8(decimals))
+                new L2ERC4626TokenVault{salt: _implSalt(1)}(assetAddress, ownerAddr_, name, symbol, uint8(decimals))
             );
             console.log("Deployed L2ERC4626TokenVault at address: ", addr_, "on chain id: ", block.chainid);
         }
@@ -86,10 +88,24 @@ contract L2ERC4626TokenVaultDeployer is Script {
         vm.writeJson(jsonOutput, "deployment-erc4626.json");
     }
 
+    // struct ERC20Json {
+    //     string deployedAddress;
+    //     string ownerAddress;
+    // }
+
+    // function getAssetAddressFromJson() public view {
+    //     string memory root = vm.projectRoot();
+    //     string memory path = string.concat(root, "/deployment-erc20.json");
+    //     string memory json = vm.readFile(path);
+    //     bytes memory data = vm.parseJson(json);
+    //     ERC20Json memory erc20Json = abi.decode(data, (ERC20Json));
+    //     console2.log("Asset address: ", erc20Json.deployedAddress);
+    // }
+
     /// @notice The CREATE2 salt to be used when deploying the vault.
-    function _implSalt() internal view returns (bytes32) {
+    function _implSalt(uint8 _index) internal view returns (bytes32) {
         string[] memory salt = vm.parseTomlStringArray(deployConfig, ".deploy_config.salt");
-        return keccak256(abi.encodePacked(salt[1]));
+        return keccak256(abi.encodePacked(salt[_index]));
     }
 
     function _precomputeTokenInitAddress() public view returns (address preComputedAddress_, address ownerAddr_) {
@@ -102,6 +118,6 @@ contract L2ERC4626TokenVaultDeployer is Script {
             type(L2NativeSuperchainERC20).creationCode, abi.encode(ownerAddr_, name, symbol, uint8(decimals))
         );
 
-        preComputedAddress_ = vm.computeCreate2Address(_implSalt(), keccak256(initCode));
+        preComputedAddress_ = vm.computeCreate2Address(_implSalt(0), keccak256(initCode));
     }
 }
