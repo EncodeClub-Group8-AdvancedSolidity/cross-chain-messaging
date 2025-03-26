@@ -4,6 +4,7 @@ pragma solidity ^0.8.25;
 import {Script, console} from "forge-std/Script.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {L2ERC4626TokenVault} from "../src/L2ERC4626TokenVault.sol";
+import {L2NativeSuperchainERC20} from "../src/L2NativeSuperchainERC20.sol";
 import {SuperchainERC20Deployer} from "./SuperchainERC20Deployer.s.sol";
 
 contract L2ERC4626TokenVaultDeployer is Script {
@@ -36,6 +37,12 @@ contract L2ERC4626TokenVaultDeployer is Script {
             console.log("Deploying to chain: ", chainToDeployTo);
 
             vm.createSelectFork(chainToDeployTo);
+
+            uint256 currentNonce = vm.getNonce(msg.sender);
+            if (keccak256(abi.encodePacked(chainToDeployTo)) == keccak256(abi.encodePacked("902"))) {
+                vm.setNonce(msg.sender, uint64(currentNonce + 1));
+            }
+
             (address _deployedAddress, address _ownerAddr) = deployL2ERC4626TokenVault();
             deployedAddress = _deployedAddress;
             ownerAddr = _ownerAddr;
@@ -50,7 +57,7 @@ contract L2ERC4626TokenVaultDeployer is Script {
         string memory symbol = vm.parseTomlString(deployConfig, ".vault.symbol");
         uint256 decimals = vm.parseTomlUint(deployConfig, ".vault.decimals");
         require(decimals <= type(uint8).max, "decimals exceeds uint8 range");
-        (address assetAddress,) = new SuperchainERC20Deployer()._precomputeInitAddress();
+        (address assetAddress,) = _precomputeTokenInitAddress();
 
         bytes memory initCode = abi.encodePacked(
             type(L2ERC4626TokenVault).creationCode, abi.encode(assetAddress, ownerAddr_, name, symbol, uint8(decimals))
@@ -83,5 +90,18 @@ contract L2ERC4626TokenVaultDeployer is Script {
     function _implSalt() internal view returns (bytes32) {
         string[] memory salt = vm.parseTomlStringArray(deployConfig, ".deploy_config.salt");
         return keccak256(abi.encodePacked(salt[1]));
+    }
+
+    function _precomputeTokenInitAddress() public view returns (address preComputedAddress_, address ownerAddr_) {
+        ownerAddr_ = vm.parseTomlAddress(deployConfig, ".token.owner_address");
+        string memory name = vm.parseTomlString(deployConfig, ".token.name");
+        string memory symbol = vm.parseTomlString(deployConfig, ".token.symbol");
+        uint256 decimals = vm.parseTomlUint(deployConfig, ".token.decimals");
+        require(decimals <= type(uint8).max, "decimals exceeds uint8 range");
+        bytes memory initCode = abi.encodePacked(
+            type(L2NativeSuperchainERC20).creationCode, abi.encode(ownerAddr_, name, symbol, uint8(decimals))
+        );
+
+        preComputedAddress_ = vm.computeCreate2Address(_implSalt(), keccak256(initCode));
     }
 }
