@@ -1,7 +1,6 @@
 # Ethereum Vault Connector (EVC) Playground
 
-Start localnode 
-
+To start a local node 
 
 ```bash
 anvil
@@ -45,14 +44,10 @@ ASSET_ADDRESS="0x..."
 VAULT_ADDRESS="0x..."
 EVC_ADDRESS="0x..."
 
-The script support the following operations
+The script support the following operations:
 
 1) Approve tokens
 2) Deposit tokens    
 3) Check balance
 4) Withdraw tokens
 5) Exit
-  
-
-
-
