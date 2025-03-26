@@ -46,6 +46,15 @@ contract L2ERC4626TokenVaultDeployer is Script {
             console.log("Deploying to chain: ", chainToDeployTo);
 
             vm.createSelectFork(chainToDeployTo);
+
+            uint256 currentNonce = vm.getNonce(msg.sender);
+            if (
+                keccak256(abi.encodePacked(chainToDeployTo)) ==
+                keccak256(abi.encodePacked("902"))
+            ) {
+                vm.setNonce(msg.sender, uint64(currentNonce + 1));
+            }
+
             (
                 address _deployedAddress,
                 address _ownerAddr

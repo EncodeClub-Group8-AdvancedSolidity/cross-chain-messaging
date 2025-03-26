@@ -1,37 +1,49 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.25;
+pragma solidity ^0.8.25;
 
 // Testing utilities
-import {Test} from "forge-std/Test.sol";
+import {Test, console2} from "forge-std/Test.sol";
+
+// Contracts
+import {IERC20} from "@openzeppelin-contracts/token/ERC20/IERC20.sol";
+// import {ERC20} from "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 
 // Libraries
 import {PredeployAddresses} from "@interop-lib/libraries/PredeployAddresses.sol";
-import {IERC20} from "@openzeppelin-contracts/token/ERC20/IERC20.sol";
 
 import {Ownable} from "@solady/auth/Ownable.sol";
 import {ERC20} from "@solady/tokens/ERC20.sol";
 
 // Target contract
-import {L2NativeSuperchainERC20} from "src/L2NativeSuperchainERC20.sol";
+import {TokenVault} from "../src/TokenVault.sol";
+import {L2ERC4626TokenVault} from "../src/L2ERC4626TokenVault.sol";
+import {SuperchainERC20} from "../src/SuperchainERC20.sol";
+import {L2NativeSuperchainERC20} from "../src/L2NativeSuperchainERC20.sol";
 
-/// @title L2NativeSuperchainERC20Test
-/// @notice Contract for testing the L2NativeSuperchainERC20Test contract.
-contract L2NativeSuperchainERC20Test is Test {
+contract L2ERC4626TokenVaultTest is Test {
     address internal constant ZERO_ADDRESS = address(0);
     address internal constant SUPERCHAIN_TOKEN_BRIDGE = PredeployAddresses.SUPERCHAIN_TOKEN_BRIDGE;
     address internal constant MESSENGER = PredeployAddresses.L2_TO_L2_CROSS_DOMAIN_MESSENGER;
+
+    MockSuperchainERC20 public superchainERC20;
+
     address owner;
     address alice;
     address bob;
+    address charlie;
+    TokenVault tokenVault;
 
-    L2NativeSuperchainERC20 public superchainERC20;
-
-    /// @notice Sets up the test suite.
     function setUp() public {
         owner = makeAddr("owner");
         alice = makeAddr("alice");
         bob = makeAddr("bob");
-        superchainERC20 = new L2NativeSuperchainERC20(owner, "Test", "TEST", 18);
+        charlie = makeAddr("charlie");
+
+        superchainERC20 = new MockSuperchainERC20(owner, "Deposit Token", "DT", 18);
+
+        vm.prank(owner);
+        tokenVault = new L2ERC4626TokenVault(address(superchainERC20), address(this), "Test", "TEST", 18);
+        vm.stopPrank();
     }
 
     /// @notice Helper function to setup a mock and expect a call to it.
@@ -42,9 +54,13 @@ contract L2NativeSuperchainERC20Test is Test {
 
     /// @notice Tests the metadata of the token is set correctly.
     function testMetadata() public view {
-        assertEq(superchainERC20.name(), "Test");
-        assertEq(superchainERC20.symbol(), "TEST");
+        assertEq(superchainERC20.name(), "Deposit Token");
+        assertEq(superchainERC20.symbol(), "DT");
         assertEq(superchainERC20.decimals(), 18);
+        // TokenVault
+        assertEq(tokenVault.name(), "Test");
+        assertEq(tokenVault.symbol(), "TEST");
+        assertEq(tokenVault.decimals(), 18);
     }
 
     /// @notice Tests that owner can mint tokens to an address.
@@ -58,6 +74,27 @@ contract L2NativeSuperchainERC20Test is Test {
         assertEq(superchainERC20.totalSupply(), _amount);
         assertEq(superchainERC20.balanceOf(_to), _amount);
     }
+
+    /// @notice Tests tokenVault mint function
+    // function testFuzz_minTo_succeeds(uint256 _amount) public {
+    //     // vm.assume(_spender == address(tokenVault));
+    //     // vm.assume(_to == alice);
+    //     vm.assume(_amount < type(uint256).max);
+    //     address _spender = address(tokenVault);
+    //     uint256 _sendAmount = _amount - 1;
+    //     // uint256 _sendAmount = bound(_sendAmount, _amount - 1, type(uint256).max);
+    //     // _sendAmount = bound(_sendAmount, _mintAmount + 1, type(uint256).max);
+
+    //     vm.prank(owner);
+    //     superchainERC20.mintTo(alice, _sendAmount);
+
+    //     vm.prank(alice);
+    //     superchainERC20.approve(_spender, _amount + 1);
+
+    //     console2.log("Allowance for spender: ", superchainERC20.allowance(alice, _spender));
+    //     tokenVault.mint(_sendAmount, alice);
+    //     assertEq(tokenVault.balanceOf(alice), _sendAmount);
+    // }
 
     /// @notice Tests the mintTo function reverts when the caller is not the owner.
     function testFuzz_mintTo_succeeds(address _minter, address _to, uint256 _amount) public {
@@ -167,5 +204,78 @@ contract L2NativeSuperchainERC20Test is Test {
 
         vm.expectRevert(ERC20.InsufficientAllowance.selector);
         superchainERC20.transferFrom(_from, _to, _amount);
+    }
+
+    // function setup_mint() public {
+    //     vm.startPrank(alice);
+    //     superchainERC20.approve(address(tokenVault), 1 ether);
+    //     tokenVault.mint(1 ether, alice);
+    //     assertEq(tokenVault.balanceOf(alice), 1 ether);
+    //     assertEq(superchainERC20.balanceOf(address(tokenVault)), 1 ether);
+    //     // assertEq(superchainERC20.balanceOf(alice), 10 ether);
+    //     vm.stopPrank();
+    // }
+
+    // function test_deposit() public {
+    //     vm.startPrank(alice);
+    //     superchainERC20.approve(address(tokenVault), 1 ether);
+    //     tokenVault.deposit(1 ether, alice);
+    //     assertEq(tokenVault.balanceOf(alice), 1 ether);
+    //     assertEq(superchainERC20.balanceOf(address(tokenVault)), 1 ether);
+    //     vm.stopPrank();
+    // }
+
+    // function test_withdraw() public {
+    //     setup_mint();
+    //     vm.startPrank(alice);
+    //     tokenVault.withdraw(1 ether, alice, alice);
+    //     assertEq(tokenVault.balanceOf(alice), 0);
+    //     assertEq(superchainERC20.balanceOf(address(tokenVault)), 0);
+    //     assertEq(superchainERC20.balanceOf(alice), 10 ether);
+    //     vm.stopPrank();
+    // }
+
+    // function test_redeem() public {
+    //     setup_mint();
+    //     vm.startPrank(alice);
+    //     tokenVault.redeem(1 ether, alice, alice);
+    //     assertEq(tokenVault.balanceOf(alice), 0);
+    //     assertEq(superchainERC20.balanceOf(address(tokenVault)), 0);
+    //     assertEq(superchainERC20.balanceOf(alice), 10 ether);
+    //     vm.stopPrank();
+    // }
+
+    // function setup_shareholders() public {
+    //     vm.startPrank(owner);
+    //     superchainERC20.approve(address(tokenVault), 10 ether);
+    //     tokenVault.deposit(10 ether, owner);
+    //     vm.stopPrank();
+    //     vm.startPrank(alice);
+    //     superchainERC20.approve(address(tokenVault), 10 ether);
+    //     tokenVault.deposit(10 ether, alice);
+    //     vm.stopPrank();
+    //     assertEq(tokenVault.balanceOf(owner), 10 ether);
+    //     assertEq(tokenVault.balanceOf(alice), 10 ether);
+    // }
+
+    // function test_profitSharing() public {
+    //     setup_shareholders();
+    //     vm.startPrank(owner);
+    //     depositToken.approve(address(tokenVault), 2 ether);
+    //     tokenVault.shareProfits(2 ether);
+    //     vm.stopPrank();
+    //     assertEq(depositToken.balanceOf(address(tokenVault)), 22 ether);
+    //     uint256 owner_share = tokenVault.previewRedeem(10 ether);
+    //     assertEq(owner_share, 11 ether);
+    // }
+}
+
+contract MockSuperchainERC20 is L2NativeSuperchainERC20 {
+    constructor(address owner_, string memory name_, string memory symbol_, uint8 decimals_)
+        L2NativeSuperchainERC20(owner_, name_, symbol_, decimals_)
+    {}
+
+    function mint(address to, uint256 amount) external {
+        _mint(to, amount);
     }
 }

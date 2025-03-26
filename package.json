@@ -2,6 +2,8 @@
   "name": "@group8/crosschain-messaging",
   "main": "index.js",
   "scripts": {
+    "deploy:tictac": "env-cmd -f .env cross-env-shell 'wait-port http://:8420/ready && forge script TicTacToeDeployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
+		"deploy:ping": "env-cmd -f .env cross-env-shell 'wait-port http://:8420/ready && forge script CrossChainPingPongDeployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
     "deploy:dev": "env-cmd -f .env cross-env-shell 'wait-port http://:8420/ready && forge script SuperchainERC20Deployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
     "deploy:token": "env-cmd -f .env cross-env-shell 'forge script SuperchainERC20Deployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
     "deploy:vault": "env-cmd -f .env cross-env-shell 'forge script L2ERC4626TokenVaultDeployer --broadcast --private-key $DEPLOYER_PRIVATE_KEY'",
