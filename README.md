@@ -1,3 +1,12 @@
+# Superchain Vault Connector
+
+Superchain Vault Connector is an intermediary between user accounts and SuperchainERC-4626 compliant vaults across the Superchain.
+
+## What is this project?
+
+This project implements an ERC4626 vault  that can hold SuperchainERC20 tokens as its underlying asset. And allows a rebalancing of the underlying assets on the superchain cluster.
+
+
 ## Documentation
 
 1. [InterOp message-passing](https://docs.optimism.io/stack/interop/message-passing)
