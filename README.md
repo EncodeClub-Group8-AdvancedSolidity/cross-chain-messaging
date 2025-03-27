@@ -17,6 +17,7 @@ The primary tools:
 - Supersim: For local blockchain simulation
 - TypeScript: For implementation
 - Viem: For blockchain interaction
+- make: For simple execution scripts
 
 Verify your installation:
 
@@ -35,6 +36,11 @@ supersim --version
    brew tap ethereum-optimism/tap
    brew install supersim
    ```
+3. `jq` if it's not already installed
+  ```bash
+  sudo apt-get install jq  # For Ubuntu/Debian
+  brew install jq          # For macOS
+  ```
 
 Add `supersim` to path: For Bash at `$HOME/.bashrc`. `$HOME/.zshrc` for Zsh.
 
@@ -42,6 +48,106 @@ Add `supersim` to path: For Bash at `$HOME/.bashrc`. `$HOME/.zshrc` for Zsh.
 # Add supersim PATH
 export PATH="$PATH:$HOME/supersim"
 ```
+## Running via make
+
+### Initialize the env and dependencies
+```bash
+make init
+```
+### Option 1: Run the project in mprocs
+
+Runs multiple commands in parallel.
+```bash
+make run-dev 
+```
+
+### Option 2: Detailed commands
+
+```bash
+# To view the full list of commands available 
+make
+```
+
+1. Start Supersim in a separate terminal:
+```bash
+make run-supersim
+```
+2. Deploy the underlying asset (SuperchainERC20) to ChainA and ChainB
+```bash
+make deploy-token 
+```
+
+3. Deploy the ERC4626-vault (Superchain compatible) to ChainA and ChainB
+```bash
+make deploy-vault
+```
+
+4. Mint 1000 SuperchainTokens to a User on ChainA
+```bash
+make mint-token
+```
+
+5. Approve the ERC4626-vault to spend the SuperchainToken(underlying asset)
+```bash
+make approve-token
+```
+
+6. Deposit the uderlying asset to recieve vault shares from the ERC4626-vault
+```bash
+make deposit-token
+```
+
+```bash
+# Check the balance of the user
+make balance-of-share-token  
+```
+
+7. Bridge half of the shares recieved from step-5 to ChainB
+```bash
+make bridge-shares
+```
+```bash
+# Check the balance of the user
+make balance-of-share-token 
+
+# Check the balance of the underlying asset
+make balance-of-vault 
+```
+
+8. Rebalance the vault underlying asset between ChainA and ChainB
+
+```bash
+make rebalance-vault
+```
+```bash
+# Check the balance of the underlying asset
+make balance-of-vault 
+```
+
+### Examples
+
+1. Crosschain Ping Pong
+```bash
+# Deploy the contracts
+make deploy-pingpong
+# Hit the ball on ChainA
+make hit-ball
+# Inspect the logs from L2ToL2CrossDomainMessenger
+cast logs --address 0x4200000000000000000000000000000000000023 --rpc-url http://127.0.0.1:9545
+```
+
+2. Crosschain greeter
+
+```bash
+# Send a greeting message from ChainA to ChainB
+make send-greeter-message 
+# Returns a message "Hello from chain A, with a CrossDomainSetGreeting event"
+
+# Read a log of a greeting sent crosschain
+make read-greeter-logs
+# Expected return is 901
+```
+
 
 ## 🚀 Getting Started with Greeter
 
