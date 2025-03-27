@@ -6,11 +6,11 @@ import {Test} from "forge-std/Test.sol";
 
 // Libraries
 import {PredeployAddresses} from "@interop-lib/libraries/PredeployAddresses.sol";
-import {IERC20} from "@openzeppelin-contracts-5.2.0/interfaces/IERC20.sol";
+import {IERC20} from "@openzeppelin-contracts/token/ERC20/IERC20.sol";
+import {IERC7802} from "@interop-lib/interfaces/IERC7802.sol";
 
 // Target contract
 import {SuperchainERC20} from "../src/SuperchainERC20.sol";
-import {IERC7802} from "@interop-lib/interfaces/IERC7802.sol";
 import {L2NativeSuperchainERC20} from "../src/L2NativeSuperchainERC20.sol";
 
 /// @title SuperchainERC20Test

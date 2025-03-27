@@ -4,3 +4,9 @@
 [submodule "dependencies/interop-lib"]
 	path = dependencies/interop-lib
 	url = https://github.com/ethereum-optimism/interop-lib
+[submodule "dependencies/solady"]
+	path = dependencies/solady
+	url = https://github.com/vectorized/solady
+[submodule "dependencies/openzeppelin-contracts"]
+	path = dependencies/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts

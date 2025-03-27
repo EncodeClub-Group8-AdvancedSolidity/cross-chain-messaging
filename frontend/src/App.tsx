@@ -1,5 +1,6 @@
-import { ArrowLeftRight as BridgeIcon, Droplet, RefreshCw } from 'lucide-react'
+import { ArrowLeftRight as BridgeIcon, Droplet, RefreshCw, ListRestart } from 'lucide-react'
 import { Bridge } from '@/Bridge'
+import { Replay } from '@/Replay'
 import { Providers } from '@/Providers'
 import { WalletBalance } from '@/components/WalletBalance'
 import { Card } from '@/components/ui/card'
@@ -65,6 +66,10 @@ function App() {
                         <BridgeIcon className="mr-2 h-4 w-4" />
                         Bridge
                       </TabsTrigger>
+                      <TabsTrigger value="replay" className="flex-1">
+                        <ListRestart className="mr-2 h-4 w-4" />
+                        Replay
+                      </TabsTrigger>
                     </TabsList>
                   </div>
 
@@ -74,6 +79,9 @@ function App() {
                     </TabsContent>
                     <TabsContent value="faucet">
                       <Faucet />
+                    </TabsContent>
+                    <TabsContent value="replay">
+                      <Replay />
                     </TabsContent>
                     <TabsContent value="deploy">
                       {/* Add Contract Deployment interface */}

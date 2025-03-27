@@ -3,12 +3,13 @@ pragma solidity 0.8.25;
 
 // Contracts
 import {ERC20} from "@solady/tokens/ERC20.sol";
-
+// import {ERC20} from "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 // Libraries
 import {PredeployAddresses} from "@interop-lib/libraries/PredeployAddresses.sol";
 
 // Interfaces
-import {IERC20} from "@openzeppelin-contracts-5.2.0/interfaces/IERC20.sol";
+import {IERC20} from "@openzeppelin-contracts/token/ERC20/IERC20.sol";
+
 import {IERC7802, IERC165} from "@interop-lib/interfaces/IERC7802.sol";
 
 /// @title SuperchainERC20

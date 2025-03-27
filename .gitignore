@@ -15,6 +15,7 @@ docs/
 .env
 
 deployment.json
+deployment-*.json
 
 # mprocs
 # /mprocs.json
