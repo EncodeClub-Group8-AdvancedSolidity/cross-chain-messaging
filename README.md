@@ -38,7 +38,7 @@ supersim --version
 
 Add `supersim` to path: For Bash at `$HOME/.bashrc`. `$HOME/.zshrc` for Zsh.
 
-```
+```bash
 # Add supersim PATH
 export PATH="$PATH:$HOME/supersim"
 ```
@@ -130,16 +130,6 @@ npm run dev
 
 ## 📦 Deploying SuperchainERC20s
 
-### Configuring RPC urls
-
-This repository includes a script to automatically fetch the public RPC URLs for each chain listed in the [Superchain Registry](https://github.com/ethereum-optimism/superchain-registry/blob/main/chainList.json) and add them to the `[rpc_endpoints]` configuration section of `foundry.toml`.
-
-The script ensures that only new RPC URLs are appended, preserving any URLs already present in `foundry.toml`. To execute this script, run:
-
-```sh
-npm run update:rpcs
-```
-
 ### Deployment config
 
 The deployment configuration for token deployments is managed through the `deploy-config.toml` file. Below is a detailed breakdown of each configuration section:
@@ -169,8 +159,7 @@ Deployment configuration for the token that will be deployed.
 
 ### Deploying a token
 
-Before proceeding with this section, ensure that your `deploy-config.toml` file is fully configured (see the [Deployment config](#deployment-config) section for more details on setup). Additionally, confirm that the `[rpc_endpoints]` section in `foundry.toml` is properly set up by following the instructions in [Configuring RPC urls](#configuring-rpc-urls).
-
+Before proceeding with this section, ensure that your `deploy-config.toml` file is fully configured (see the [Deployment config](#deployment-config) section for more details on setup). Additionally, confirm that the `[rpc_endpoints]` section in `foundry.toml` is properly set up.
 Deployments are executed through the `SuperchainERC20Deployer.s.sol` script. This script deploys tokens across each specified chain in the deployment configuration using `Create2`, ensuring deterministic contract addresses for each deployment. The script targets the `L2NativeSuperchainERC20.sol` contract by default. If you need to modify the token being deployed, either update this file directly or point the script to a custom token contract of your choice.
 
 To execute a token deployment run:
@@ -309,3 +298,166 @@ cast balance --erc20 $VAULT_CONTRACT_ADDRESS $USER_ADDR --rpc-url $RPC_B
 cast balance --erc20 $VAULT_CONTRACT_ADDRESS $USER_ADDR --rpc-url $RPC_A
 
 ```
+
+# Cross-Chain Vault System
+
+This project implements a cross-chain vault system that allows users to deposit tokens on one chain and have them available on another chain through Optimism's cross-chain messaging infrastructure.
+
+## Prerequisites
+
+- Foundry installed
+- Access to two Optimism chains (Chain A and Chain B)
+- Private key with sufficient funds on both chains
+- Environment variables set up
+
+## Setup
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd cross-chain-messaging
+```
+
+2. Install dependencies:
+```bash
+forge install
+```
+
+3. Set up environment variables:
+```bash
+# Your private key (same on both chains)
+export PRIVATE_KEY=your_private_key_here
+
+# RPC endpoints for both chains
+export RPC_A="http://127.0.0.1:9545"  # Chain A RPC endpoint
+export RPC_B="http://127.0.0.1:9546"  # Chain B RPC endpoint
+
+# Your wallet address (should be the same on both chains)
+export ETH_FROM=your_wallet_address
+```
+
+4. Deploy the contracts on both chains:
+```bash
+# Deploy to Chain A
+forge script script/SuperchainERC20Deployer.s.sol --rpc-url $RPC_A --broadcast
+
+# Deploy to Chain B
+forge script script/SuperchainERC20Deployer.s.sol --rpc-url $RPC_B --broadcast
+```
+
+5. Update the contract addresses in `evc/script/crossChainVaultOp.sh`:
+```bash
+# Edit these addresses to match your deployment
+ASSET_ADDRESS="your_asset_address"
+VAULT_ADDRESS="your_vault_address"
+EVC_ADDRESS="your_evc_address"
+```
+
+## Interacting with the Cross-Chain Vault
+
+### Using the Script
+
+The `crossChainVaultOp.sh` script provides an interactive menu for interacting with the vault system.
+
+1. Make the script executable:
+```bash
+chmod +x evc/script/crossChainVaultOp.sh
+```
+
+2. Run the script:
+```bash
+./evc/script/crossChainVaultOp.sh
+```
+
+### Available Operations
+
+1. **Approve tokens**
+   - Approves the vault to spend your tokens
+   - Required before depositing
+
+2. **Deposit tokens**
+   - Deposits tokens into the vault on the current chain
+   - Requires prior approval
+
+3. **Check balance**
+   - Shows your current vault share balance
+   - Converts shares to asset value
+
+4. **Withdraw tokens**
+   - Withdraws tokens from the vault
+   - Can be used on either chain
+
+5. **Cross-chain deposit to Chain B**
+   - Initiates a cross-chain deposit from Chain A to Chain B
+   - Requires:
+     - Amount to deposit
+     - Target chain ID (Chain B)
+     - Target vault address on Chain B
+
+### Example Usage
+
+1. First, approve tokens:
+```bash
+# Select "Approve tokens" from the menu
+# Enter amount (default is 1 token = 1000000000000000000 wei)
+```
+
+2. Perform a cross-chain deposit:
+```bash
+# Select "Cross-chain deposit to Chain B"
+# Enter:
+# - Amount to deposit
+# - Chain B's chain ID
+# - Vault address on Chain B
+```
+
+3. Check your balance on Chain B:
+```bash
+# Switch RPC endpoint to Chain B
+export RPC_ENDPOINT=$RPC_B
+# Run the script again and select "Check balance"
+```
+
+## Important Notes
+
+1. **Cross-Chain Messaging**
+   - Messages take time to be processed between chains
+   - Monitor the transaction status on both chains
+   - The messenger contract address is predeployed at `0x4200000000000000000000000000000000000007`
+
+2. **Gas Fees**
+   - You need sufficient funds for:
+     - Token approval transaction
+     - Cross-chain message transaction
+     - Gas fees on both chains
+
+3. **Security**
+   - Never share your private key
+   - Keep your environment variables secure
+   - Verify contract addresses before interactions
+
+4. **Troubleshooting**
+   - If a transaction fails, check:
+     - Gas fees
+     - Contract addresses
+     - RPC endpoint connectivity
+     - Chain synchronization status
+
+## Architecture
+
+The system consists of:
+1. SuperchainERC20 token contract (deployed on both chains)
+2. Vault contract (deployed on both chains)
+3. Cross-chain messenger (predeployed on both chains)
+4. EVC (Ethereum Vault Connector) contract
+
+Messages flow from Chain A → Messenger → Chain B, with the messenger handling the cross-chain communication.
+
+## Development
+
+To modify or extend the system:
+
+1. Update contract addresses in the scripts
+2. Modify the vault contract for new functionality
+3. Update the cross-chain messaging logic if needed
+4. Test thoroughly on both chains
