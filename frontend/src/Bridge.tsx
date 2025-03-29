@@ -111,6 +111,10 @@ export const Bridge = () => {
               placeholder="0.0"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
+              onWheel={(e) => {
+                e.target.blur(); // Temporarily remove focus
+                setTimeout(() => e.target.focus(), 0); // Restore focus after the event
+              }}
             />
           </div>
 
