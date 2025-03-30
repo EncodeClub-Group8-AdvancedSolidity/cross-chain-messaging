@@ -130,7 +130,7 @@ contract L2ERC4626TokenVault is Ownable, TokenVault {
     /// @param _amount  Amount of tokens to relay.
     function relayAsset(address asset_, address _from, address _to, uint256 _amount) external onlyCrossDomainCallback {
         (address crossDomainMessageSender, uint256 source) = messenger.crossDomainMessageContext();
-
+        crossDomainMessageSender;
         emit RelayAsset(asset_, _from, _to, _amount, source);
 
         bytes memory message = abi.encodeCall(this.completeRebalance, (asset_));

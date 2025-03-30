@@ -89,12 +89,13 @@ contract EthereumVaultConnectorScribble is EthereumVaultConnector {
     /// #if_succeeds "is non-reentrant" !old(executionContext.areChecksInProgress()) && !old(executionContext.isControlCollateralInProgress());
     /// #if_succeeds "checks are properly executed 1" !old(executionContext.areChecksDeferred()) && old(accountStatusChecks.numElements) > 0 ==> accountStatusChecks.numElements == 0;
     /// #if_succeeds "checks are properly executed 2" !old(executionContext.areChecksDeferred()) && old(vaultStatusChecks.numElements) > 0 ==> vaultStatusChecks.numElements == 0;
-    function call(
-        address targetContract,
-        address onBehalfOfAccount,
-        uint256 value,
-        bytes calldata data
-    ) public payable virtual override returns (bytes memory result) {
+    function call(address targetContract, address onBehalfOfAccount, uint256 value, bytes calldata data)
+        public
+        payable
+        virtual
+        override
+        returns (bytes memory result)
+    {
         return super.call(targetContract, onBehalfOfAccount, value, data);
     }
 
@@ -103,12 +104,13 @@ contract EthereumVaultConnectorScribble is EthereumVaultConnector {
     /// #if_succeeds "the target cannot be this contract" targetCollateral != address(this);
     /// #if_succeeds "checks are properly executed 1" !old(executionContext.areChecksDeferred()) && old(accountStatusChecks.numElements) > 0 ==> accountStatusChecks.numElements == 0;
     /// #if_succeeds "checks are properly executed 2" !old(executionContext.areChecksDeferred()) && old(vaultStatusChecks.numElements) > 0 ==> vaultStatusChecks.numElements == 0;
-    function controlCollateral(
-        address targetCollateral,
-        address onBehalfOfAccount,
-        uint256 value,
-        bytes calldata data
-    ) public payable virtual override returns (bytes memory result) {
+    function controlCollateral(address targetCollateral, address onBehalfOfAccount, uint256 value, bytes calldata data)
+        public
+        payable
+        virtual
+        override
+        returns (bytes memory result)
+    {
         return super.controlCollateral(targetCollateral, onBehalfOfAccount, value, data);
     }
 

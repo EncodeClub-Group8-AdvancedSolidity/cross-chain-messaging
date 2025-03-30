@@ -33,12 +33,11 @@ contract Target {
         return msg.value;
     }
 
-    function controlCollateralTest(
-        address evc,
-        address msgSender,
-        uint256 value,
-        address onBehalfOfAccount
-    ) external payable returns (uint256) {
+    function controlCollateralTest(address evc, address msgSender, uint256 value, address onBehalfOfAccount)
+        external
+        payable
+        returns (uint256)
+    {
         try IEVC(evc).getCurrentOnBehalfOfAccount(address(0)) returns (address _onBehalfOfAccount, bool) {
             require(_onBehalfOfAccount == onBehalfOfAccount, "it/invalid-on-behalf-of-account");
         } catch {
@@ -56,12 +55,11 @@ contract Target {
         return msg.value;
     }
 
-    function callbackTest(
-        address evc,
-        address msgSender,
-        uint256 value,
-        address onBehalfOfAccount
-    ) external payable returns (uint256) {
+    function callbackTest(address evc, address msgSender, uint256 value, address onBehalfOfAccount)
+        external
+        payable
+        returns (uint256)
+    {
         try IEVC(evc).getCurrentOnBehalfOfAccount(address(0)) returns (address _onBehalfOfAccount, bool) {
             require(_onBehalfOfAccount == onBehalfOfAccount, "cbt/invalid-on-behalf-of-account");
         } catch {

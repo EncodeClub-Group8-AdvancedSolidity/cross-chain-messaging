@@ -153,10 +153,9 @@ contract AccountAndVaultStatusTest is Test {
         }
     }
 
-    function test_RevertIfChecksReentrancy_RequireAccountAndVaultStatusCheck(
-        uint8 index,
-        address[] calldata accounts
-    ) external {
+    function test_RevertIfChecksReentrancy_RequireAccountAndVaultStatusCheck(uint8 index, address[] calldata accounts)
+        external
+    {
         vm.assume(index < accounts.length);
         vm.assume(accounts.length > 0 && accounts.length <= SET_MAX_ELEMENTS);
 
@@ -177,10 +176,9 @@ contract AccountAndVaultStatusTest is Test {
         evc.getLastAccountStatusCheckTimestamp(accounts[index]);
     }
 
-    function test_AcquireChecksLock_RequireAccountAndVaultStatusChecks(
-        uint8 numberOfAddresses,
-        bytes memory seed
-    ) external {
+    function test_AcquireChecksLock_RequireAccountAndVaultStatusChecks(uint8 numberOfAddresses, bytes memory seed)
+        external
+    {
         vm.assume(numberOfAddresses > 0 && numberOfAddresses <= SET_MAX_ELEMENTS);
 
         address[] memory accounts = new address[](numberOfAddresses);
