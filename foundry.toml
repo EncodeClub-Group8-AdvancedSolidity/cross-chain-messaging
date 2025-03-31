@@ -20,5 +20,6 @@ fs_permissions = [
 forge-std = "1.9.6"
 "@openzeppelin-contracts" = "5.2.0"
 solady = "0.1.12"
+solmate = "6.8.0"
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
