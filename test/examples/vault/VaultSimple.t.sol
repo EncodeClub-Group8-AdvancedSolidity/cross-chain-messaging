@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import "solmate/test/utils/DSTestPlus.sol";
+import "./DSTestPlus.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
 import "../../../src/evc/EthereumVaultConnector.sol";
 import "../../../src/examples/VaultSimple.sol";
@@ -19,6 +19,7 @@ contract VaultSimpleWithYield is VaultSimple {
 }
 
 contract VaultSimpleTest is DSTestPlus {
+    Vm vm = Vm(HEVM_ADDRESS);
     IEVC evc;
     MockERC20 underlying;
     VaultSimple vault;
@@ -413,45 +414,52 @@ contract VaultSimpleTest is DSTestPlus {
         assertEq(underlying.balanceOf(address(vault)), 1);
     }
 
-    function testFailDepositWithNotEnoughApproval() public {
+    function test_RevertWhen_DepositWithNotEnoughApproval() public {
         underlying.mint(address(this), 0.5e18);
         underlying.approve(address(vault), 0.5e18);
         assertEq(underlying.allowance(address(this), address(vault)), 0.5e18);
 
+        vm.expectRevert();
         vault.deposit(1e18, address(this));
     }
 
-    function testFailWithdrawWithNotEnoughUnderlyingAmount() public {
+    function test_RevertWhen_WithdrawWithNotEnoughUnderlyingAmount() public {
         underlying.mint(address(this), 0.5e18);
         underlying.approve(address(vault), 0.5e18);
 
         vault.deposit(0.5e18, address(this));
 
+        vm.expectRevert();
         vault.withdraw(1e18, address(this), address(this));
     }
 
-    function testFailRedeemWithNotEnoughShareAmount() public {
+    function test_RevertWhen_RedeemWithNotEnoughShareAmount() public {
         underlying.mint(address(this), 0.5e18);
         underlying.approve(address(vault), 0.5e18);
 
         vault.deposit(0.5e18, address(this));
 
+        vm.expectRevert();
         vault.redeem(1e18, address(this), address(this));
     }
 
-    function testFailWithdrawWithNoUnderlyingAmount() public {
+    function test_RevertWhen_WithdrawWithNoUnderlyingAmount() public {
+        vm.expectRevert();
         vault.withdraw(1e18, address(this), address(this));
     }
 
-    function testFailRedeemWithNoShareAmount() public {
+    function test_RevertWhen_RedeemWithNoShareAmount() public {
+        vm.expectRevert();
         vault.redeem(1e18, address(this), address(this));
     }
 
-    function testFailDepositWithNoApproval() public {
+    function test_RevertWhen_DepositWithNoApproval() public {
+        vm.expectRevert();
         vault.deposit(1e18, address(this));
     }
 
-    function testFailMintWithNoApproval() public {
+    function test_RevertWhen_MintWithNoApproval() public {
+        vm.expectRevert();
         vault.mint(1e18, address(this));
     }
 
