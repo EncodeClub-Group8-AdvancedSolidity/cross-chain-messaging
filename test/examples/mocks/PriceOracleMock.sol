@@ -41,11 +41,11 @@ contract PriceOracleMock is IPriceOracle {
         }
     }
 
-    function getQuotes(
-        uint256 amount,
-        address base,
-        address quote
-    ) external view returns (uint256 bidOut, uint256 askOut) {
+    function getQuotes(uint256 amount, address base, address quote)
+        external
+        view
+        returns (uint256 bidOut, uint256 askOut)
+    {
         uint256 price;
         (amount, base, quote, price) = _resolveOracle(amount, base, quote);
 
@@ -66,11 +66,11 @@ contract PriceOracleMock is IPriceOracle {
         return AssetInfo.wrap(uint160(asset) | (isVault ? VAULT_MASK : 0));
     }
 
-    function _resolveOracle(
-        uint256 amount,
-        address base,
-        address quote
-    ) internal view returns (uint256, address, address, uint256) {
+    function _resolveOracle(uint256 amount, address base, address quote)
+        internal
+        view
+        returns (uint256, address, address, uint256)
+    {
         // Check the base case
         if (base == quote) return (amount, base, quote, 0);
 

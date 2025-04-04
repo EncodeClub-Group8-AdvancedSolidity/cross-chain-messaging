@@ -14,12 +14,9 @@ contract ERC20CollateralWrapper is ERC20Collateral {
     IERC20 private immutable _underlying;
     uint8 private immutable _decimals;
 
-    constructor(
-        address _evc_,
-        IERC20 _underlying_,
-        string memory _name_,
-        string memory _symbol_
-    ) ERC20Collateral(_evc_, _name_, _symbol_) {
+    constructor(address _evc_, IERC20 _underlying_, string memory _name_, string memory _symbol_)
+        ERC20Collateral(_evc_, _name_, _symbol_)
+    {
         if (address(_underlying_) == address(this)) {
             revert ERC20CollateralWrapper_InvalidAddress();
         }
